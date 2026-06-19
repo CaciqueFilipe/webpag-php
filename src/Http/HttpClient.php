@@ -5,22 +5,34 @@ namespace WebPag\Http;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use WebPag\Configuration;
 use WebPag\Exceptions\ApiException;
 
 class HttpClient
 {
+    use LoggerAwareTrait;
+
+    const DEFAULT_MAX_RETRIES = 3;
+
     /** @var Configuration */
     private $config;
 
     /** @var Client */
     private $client;
 
+    /** @var int */
+    private $maxRetries;
+
     /**
-     * @param Configuration $config
-     * @param Client|null   $client
+     * @param Configuration        $config
+     * @param Client|null          $client
+     * @param LoggerInterface|null $logger
+     * @param int                  $maxRetries Número máximo de retentativas em caso de falha
      */
-    public function __construct(Configuration $config, Client $client = null)
+    public function __construct(Configuration $config, Client $client = null, LoggerInterface $logger = null, $maxRetries = self::DEFAULT_MAX_RETRIES)
     {
         $this->config = $config;
         $this->client = $client !== null ? $client : new Client([
@@ -28,6 +40,8 @@ class HttpClient
             'timeout' => $config->getTimeout(),
             'http_errors' => false,
         ]);
+        $this->setLogger($logger !== null ? $logger : new NullLogger());
+        $this->maxRetries = $maxRetries;
     }
 
     /**
@@ -47,28 +61,139 @@ class HttpClient
             'Accept' => 'application/json',
         ], isset($options['headers']) ? $options['headers'] : array());
 
-        try {
-            $response = $this->client->request($method, ltrim($uri, '/'), $options);
-        } catch (GuzzleException $e) {
-            throw new ApiException(
-                'Erro de comunicação com a API WebPag: ' . $e->getMessage(),
-                0,
-                null,
-                $e
-            );
+        $this->logger->info('WebPag API request', [
+            'method' => $method,
+            'uri' => $uri,
+            'has_body' => isset($options['json']) || isset($options['form_params']),
+            'query' => isset($options['query']) ? $options['query'] : null,
+        ]);
+
+        $lastException = null;
+        $attempts = $this->maxRetries + 1;
+
+        for ($attempt = 1; $attempt <= $attempts; $attempt++) {
+            try {
+                $startTime = microtime(true);
+                $response = $this->client->request($method, ltrim($uri, '/'), $options);
+                $elapsed = (microtime(true) - $startTime) * 1000;
+
+                $this->logger->info('WebPag API response', [
+                    'status' => $response->getStatusCode(),
+                    'uri' => $uri,
+                    'method' => $method,
+                    'elapsed_ms' => round($elapsed, 2),
+                ]);
+
+                if ($elapsed > $this->config->getTimeout() * 500) {
+                    $this->logger->warning('WebPag API slow response', [
+                        'uri' => $uri,
+                        'method' => $method,
+                        'elapsed_ms' => round($elapsed, 2),
+                    ]);
+                }
+
+                $apiResponse = ApiResponse::fromResponse($response);
+
+                if ($response->getStatusCode() >= 400) {
+                    $shouldRetry = $this->isRetryableStatusCode($response->getStatusCode());
+
+                    if ($shouldRetry && $attempt < $attempts) {
+                        $delay = $this->getBackoffDelay($attempt);
+                        $this->logger->warning('WebPag API retryable error', [
+                            'status' => $response->getStatusCode(),
+                            'uri' => $uri,
+                            'attempt' => $attempt,
+                            'next_delay_ms' => $delay * 1000,
+                        ]);
+                        usleep($delay * 1000000);
+                        continue;
+                    }
+
+                    throw new ApiException(
+                        $this->resolveErrorMessage($apiResponse),
+                        $response->getStatusCode(),
+                        $apiResponse->toArray()
+                    );
+                }
+
+                return $apiResponse;
+            } catch (ApiException $e) {
+                throw $e;
+            } catch (GuzzleException $e) {
+                $lastException = $e;
+
+                $this->logger->error('WebPag API communication error', [
+                    'uri' => $uri,
+                    'method' => $method,
+                    'attempt' => $attempt,
+                    'error' => $e->getMessage(),
+                ]);
+
+                if ($attempt < $attempts) {
+                    $delay = $this->getBackoffDelay($attempt);
+                    $this->logger->info('WebPag API retrying', [
+                        'attempt' => $attempt,
+                        'next_delay_ms' => $delay * 1000,
+                    ]);
+                    usleep($delay * 1000000);
+                }
+            }
         }
 
-        $apiResponse = ApiResponse::fromResponse($response);
+        throw new ApiException(
+            'Erro de comunicação com a API WebPag após ' . $this->maxRetries . ' tentativas: ' . $lastException->getMessage(),
+            0,
+            null,
+            $lastException
+        );
+    }
 
-        if ($response->getStatusCode() >= 400) {
-            throw new ApiException(
-                $this->resolveErrorMessage($apiResponse),
-                $response->getStatusCode(),
-                $apiResponse->toArray()
-            );
-        }
+    /**
+     * Define o LoggerInterface.
+     *
+     * @param LoggerInterface $logger
+     *
+     * @return void
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
 
-        return $apiResponse;
+    /**
+     * Retorna o número máximo de retentativas configurado.
+     *
+     * @return int
+     */
+    public function getMaxRetries()
+    {
+        return $this->maxRetries;
+    }
+
+    /**
+     * @param int $statusCode
+     *
+     * @return bool
+     */
+    private function isRetryableStatusCode($statusCode)
+    {
+        // 429 = Too Many Requests, 5xx = Server errors
+        return $statusCode === 429 || ($statusCode >= 500 && $statusCode < 600);
+    }
+
+    /**
+     * Exponential backoff com jitter: 1s, 2s, 4s, 8s, ...
+     *
+     * @param int $attempt Tentativa atual (1-based)
+     *
+     * @return float Delay em segundos
+     */
+    private function getBackoffDelay($attempt)
+    {
+        $baseDelay = pow(2, $attempt - 1);
+        $jitter = mt_rand(0, (int) ($baseDelay * 1000)) / 1000;
+
+        return $baseDelay + $jitter;
     }
 
     /**

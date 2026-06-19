@@ -130,6 +130,25 @@ class WebhookParser
     }
 
     /**
+     * Valida a assinatura do webhook.
+     *
+     * A WebPag envia o header "X-Webpag-Signature" com uma assinatura HMAC-SHA256
+     * do payload bruto (corpo da requisição), usando o API token como chave.
+     *
+     * @param string $rawPayload     Corpo bruto da requisição (JSON string)
+     * @param string $signature      Valor do header X-Webpag-Signature
+     * @param string $apiToken       Seu API token (usado como chave HMAC)
+     *
+     * @return bool
+     */
+    public static function verifySignature($rawPayload, $signature, $apiToken)
+    {
+        $expected = hash_hmac('sha256', $rawPayload, $apiToken);
+
+        return hash_equals($expected, $signature);
+    }
+
+    /**
      * @param array<string, mixed> $payload
      *
      * @return string

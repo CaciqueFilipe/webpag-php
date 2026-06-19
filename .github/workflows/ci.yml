@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php: [7.4, 8.0, 8.1, 8.2, 8.3, 8.4]
+        dependency-version: [prefer-stable]
+        include:
+          - php: 8.4
+            dependency-version: prefer-lowest
+
+    name: PHP ${{ matrix.php }} - ${{ matrix.dependency-version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: |
+          if [ "${{ matrix.dependency-version }}" = "prefer-lowest" ]; then
+            composer update --prefer-lowest --prefer-dist --no-interaction
+          else
+            composer update --prefer-dist --no-interaction
+          fi
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit --no-coverage
+
+      - name: Run PHPStan (if installed)
+        run: |
+          if [ -f vendor/bin/phpstan ]; then
+            vendor/bin/phpstan analyse --no-progress
+          else
+            echo "PHPStan not installed, skipping."
+          fi
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Syntax check
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          tools: parallel-lint
+
+      - name: Lint PHP files
+        run: parallel-lint --exclude vendor .
