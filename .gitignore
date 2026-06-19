@@ -1,8 +1,23 @@
+# Dependências
 /vendor/
-composer.lock
-.phpunit.result.cache
+
+# Ferramentas de Desenvolvimento e IDEs
 .idea/
 .vscode/
 *.swp
 .DS_Store
+
+# Variáveis de ambiente locais (Segurança!)
 .env
+.env.local
+
+# Caches e relatórios do PHPUnit / Testes
+.phpunit.result.cache
+/coverage/
+*.xml
+!phpunit.xml
+
+# Caches de ferramentas de análise estática (se usar PHPStan/Pint no futuro)
+.phpunit.cache/
+.php-cs-fixer.cache
+.phpstan-cache/
