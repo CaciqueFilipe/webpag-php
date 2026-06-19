@@ -1,5 +1,5 @@
 {
-    "name": "webpag/webpag-php",
+    "name": "filipecacique/webpag-php",
     "description": "SDK PHP/Laravel para integração com a API WebPag",
     "type": "library",
     "license": "MIT",
