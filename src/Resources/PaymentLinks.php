@@ -2,7 +2,6 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Contracts\RequestPayload;
 use WebPag\Http\ApiResponse;
 use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
 
@@ -30,17 +29,4 @@ class PaymentLinks extends AbstractResource
         return $this->http->post('api/payment-links/register', $this->resolvePayload($request));
     }
 
-    /**
-     * @param RequestPayload|array<string, mixed> $payload
-     *
-     * @return array<string, mixed>
-     */
-    private function resolvePayload($payload)
-    {
-        if ($payload instanceof RequestPayload) {
-            return $payload->toArray();
-        }
-
-        return $payload;
-    }
 }

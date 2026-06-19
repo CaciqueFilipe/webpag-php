@@ -2,7 +2,6 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Contracts\RequestPayload;
 use WebPag\Http\ApiResponse;
 use WebPag\Requests\Payments\ListPaymentsRequest;
 use WebPag\Requests\Payments\ProcessPaymentRequest;
@@ -98,21 +97,4 @@ class Payments extends AbstractResource
         return $this->http->post('api/payments/' . $paymentId . '/mark-as-paid-dev');
     }
 
-    /**
-     * @param RequestPayload|array<string, mixed>|null $payload
-     *
-     * @return array<string, mixed>
-     */
-    private function resolvePayload($payload)
-    {
-        if ($payload === null) {
-            return array();
-        }
-
-        if ($payload instanceof RequestPayload) {
-            return $payload->toArray();
-        }
-
-        return $payload;
-    }
 }

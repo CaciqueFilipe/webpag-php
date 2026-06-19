@@ -2,7 +2,6 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Contracts\RequestPayload;
 use WebPag\Http\ApiResponse;
 use WebPag\Requests\Installments\CreateInstallmentRequest;
 use WebPag\Requests\Installments\ListInstallmentsRequest;
@@ -57,21 +56,4 @@ class Installments extends AbstractResource
         return $this->http->post('api/installments/' . $installmentPlanId . '/cancel');
     }
 
-    /**
-     * @param RequestPayload|array<string, mixed>|null $payload
-     *
-     * @return array<string, mixed>
-     */
-    private function resolvePayload($payload)
-    {
-        if ($payload === null) {
-            return array();
-        }
-
-        if ($payload instanceof RequestPayload) {
-            return $payload->toArray();
-        }
-
-        return $payload;
-    }
 }

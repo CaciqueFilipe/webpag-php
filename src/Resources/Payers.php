@@ -2,7 +2,6 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Contracts\RequestPayload;
 use WebPag\Http\ApiResponse;
 use WebPag\Requests\Payers\CreatePayerRequest;
 use WebPag\Requests\Payers\SaveCreditCardRequest;
@@ -95,17 +94,4 @@ class Payers extends AbstractResource
         return $this->http->delete('api/payers/' . $payerId . '/creditcard/' . $cardId . '/remove');
     }
 
-    /**
-     * @param RequestPayload|array<string, mixed> $payload
-     *
-     * @return array<string, mixed>
-     */
-    private function resolvePayload($payload)
-    {
-        if ($payload instanceof RequestPayload) {
-            return $payload->toArray();
-        }
-
-        return $payload;
-    }
 }

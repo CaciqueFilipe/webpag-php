@@ -2,7 +2,6 @@
 
 SDK PHP para integração com a [API WebPag](https://api.webpag.com.br/docs). Compatível com **PHP puro (7.2+)** e **Laravel (5.8+)** — o Laravel é opcional.
 
-
 ## Instalação
 
 ```bash
@@ -15,39 +14,56 @@ A dependência principal é apenas o **Guzzle**. O suporte a Laravel (`Service P
 
 Obtenha sua chave API (`auth-token`) com o suporte WebPag.
 
-### Uso em PHP puro
+### Configuração via variáveis de ambiente (recomendado)
+
+Defina as variáveis no seu ambiente ou arquivo `.env`:
+
+```env
+WEBPAG_API_TOKEN=seu-token-aqui
+WEBPAG_BASE_URL=https://api.webpag.com.br
+WEBPAG_TIMEOUT=30
+```
+
+Depois é só usar:
 
 ```php
 use WebPag\WebPag;
-use WebPag\Requests\Payments\ProcessPaymentRequest;
-use WebPag\Enums\PaymentMethod;
 
-$webpag = WebPag::create(getenv('WEBPAG_API_TOKEN'));
-
-// Listar pagamentos
-$response = $webpag->payments->list();
-$payments = $response->getData();
-
-// Processar pagamento via PIX
-$request = new ProcessPaymentRequest();
-$request->payerId = 15;
-$request->name = 'Pedido #1234';
-$request->amount = 1500; // R$ 15,00 em centavos
-$request->method = PaymentMethod::PIX;
-
-$response = $webpag->payments->process($request);
-$payment = $response->getData();
+$webpag = WebPag::env();
 ```
 
-Alternativamente, você pode passar arrays associativos em qualquer endpoint:
+### Configuração via Environment (PHP puro)
 
 ```php
-$response = $webpag->payments->process([
-    'payer_id' => 15,
-    'name' => 'Pedido #1234',
-    'amount' => 1500,
-    'method' => 'pix',
-]);
+use WebPag\WebPag;
+use WebPag\Environment;
+
+// A partir de um array
+$webpag = WebPag::fromEnvironment(
+    Environment::fromArray([
+        'api_token' => 'seu-token-aqui',
+        'base_url' => 'https://api.webpag.com.br',
+        'timeout' => 30,
+    ])
+);
+
+// Ou programaticamente
+$env = new Environment();
+$env->setApiToken('seu-token-aqui')
+    ->setBaseUrl('https://api.webpag.com.br')
+    ->setTimeout(30);
+
+$webpag = WebPag::fromEnvironment($env);
+```
+
+### Configuração direta
+
+```php
+use WebPag\WebPag;
+
+$webpag = WebPag::create('seu-token-aqui');
+// ou com URL personalizada
+$webpag = WebPag::create('seu-token-aqui', 'https://api.webpag.com.br');
 ```
 
 ### Uso em Laravel
@@ -69,7 +85,6 @@ WEBPAG_BASE_URL=https://api.webpag.com.br
 
 ```php
 use WebPag\Laravel\Facades\WebPag;
-use WebPag\Requests\Payers\CreatePayerRequest;
 
 Route::get('/pagadores', function () {
     return WebPag::payers->list()->getData();
@@ -102,6 +117,42 @@ class PaymentController extends Controller
 | Pagamentos | `$webpag->payments` | list, process, find, cancel, refund, findRefund, markAsPaidDev |
 | Recorrência | `$webpag->recurrency` | create, list, update, cancel |
 | Transferências | `$webpag->transfers` | list, create, find, cancel, changeStatusDev |
+| Webhooks | `$webpag->webhooks` | parse |
+
+## Exemplos de uso
+
+### Processar pagamento via PIX
+
+```php
+use WebPag\WebPag;
+use WebPag\Enums\PaymentMethod;
+
+$webpag = WebPag::env();
+
+$response = $webpag->payments->process([
+    'payer_id' => 15,
+    'name' => 'Pedido #1234',
+    'amount' => 1500, // R$ 15,00 em centavos
+    'method' => PaymentMethod::PIX,
+]);
+
+$payment = $response->getData();
+```
+
+### Usando DTOs tipados
+
+```php
+use WebPag\Requests\Payments\ProcessPaymentRequest;
+use WebPag\Enums\PaymentMethod;
+
+$request = new ProcessPaymentRequest();
+$request->payerId = 15;
+$request->name = 'Pedido #1234';
+$request->amount = 1500;
+$request->method = PaymentMethod::PIX;
+
+$response = $webpag->payments->process($request);
+```
 
 ## DTOs de requisição
 
@@ -117,6 +168,7 @@ Classes tipadas em `WebPag\Requests\*` implementam `RequestPayload` e possuem m�
 - `WebPag\Requests\Payers\Address`
 - `WebPag\Requests\Payments\ProcessPaymentRequest`
 - `WebPag\Requests\Payments\RefundPaymentRequest`
+- `WebPag\Requests\Payments\ListPaymentsRequest`
 - `WebPag\Requests\Recurrency\CreateRecurrencyRequest`
 - `WebPag\Requests\Transfers\CreateTransferRequest`
 - e outros...
@@ -126,8 +178,8 @@ Classes tipadas em `WebPag\Requests\*` implementam `RequestPayload` e possuem m�
 Enums disponíveis em `WebPag\Enums\`:
 
 - `PaymentMethod` — `credit_card`, `pix`, `bank_slip`
-- `RecurrencyFrequency` — `monthly`, `bimonthly`, etc.
-- `PaymentStatus` — status numéricos de pagamento
+- `RecurrencyFrequency` — `monthly`, `bimonthly`, `quarterly`, `semiannual`, `yearly`
+- `PaymentStatus` — status numéricos de pagamento (10 a 90)
 - `TransferDestinationType`, `TransferType`, `PixKeyType`, etc.
 
 ## Webhooks
@@ -135,8 +187,6 @@ Enums disponíveis em `WebPag\Enums\`:
 Para processar notificações recebidas da WebPag:
 
 ```php
-use WebPag\Webhooks\WebhookEvent;
-
 $event = $webpag->webhooks->parse($request->getContent());
 
 if ($event->isPayment() && $event->getStatus() === 40) {

@@ -77,6 +77,45 @@ class WebPag
     }
 
     /**
+     * Cria uma instância a partir das variáveis de ambiente.
+     *
+     * Lê: WEBPAG_API_TOKEN, WEBPAG_BASE_URL, WEBPAG_TIMEOUT
+     *
+     * @return self
+     *
+     * @throws \RuntimeException Se WEBPAG_API_TOKEN não estiver definida
+     */
+    public static function env()
+    {
+        $environment = Environment::fromEnv();
+
+        return self::fromEnvironment($environment);
+    }
+
+    /**
+     * Cria uma instância a partir de um objeto Environment.
+     *
+     * @param Environment $environment
+     *
+     * @return self
+     *
+     * @throws \RuntimeException Se o token não estiver definido
+     */
+    public static function fromEnvironment(Environment $environment)
+    {
+        $config = $environment->toConfiguration();
+
+        if ($config->getApiToken() === '') {
+            throw new \RuntimeException(
+                'WEBPAG_API_TOKEN não definido. Configure a variável de ambiente '
+                . 'WEBPAG_API_TOKEN ou use WebPag::create($token) passando o token diretamente.'
+            );
+        }
+
+        return new self($config);
+    }
+
+    /**
      * @return Configuration
      */
     public function getConfiguration()

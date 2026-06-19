@@ -2,7 +2,6 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Contracts\RequestPayload;
 use WebPag\Http\ApiResponse;
 use WebPag\Requests\Transfers\ChangeTransferStatusDevRequest;
 use WebPag\Requests\Transfers\CreateTransferRequest;
@@ -74,21 +73,4 @@ class Transfers extends AbstractResource
         );
     }
 
-    /**
-     * @param RequestPayload|array<string, mixed>|null $payload
-     *
-     * @return array<string, mixed>
-     */
-    private function resolvePayload($payload)
-    {
-        if ($payload === null) {
-            return array();
-        }
-
-        if ($payload instanceof RequestPayload) {
-            return $payload->toArray();
-        }
-
-        return $payload;
-    }
 }

@@ -2,7 +2,6 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Contracts\RequestPayload;
 use WebPag\Http\ApiResponse;
 use WebPag\Requests\Recurrency\CreateRecurrencyRequest;
 use WebPag\Requests\Recurrency\ListRecurrencyRequest;
@@ -62,21 +61,4 @@ class Recurrency extends AbstractResource
         return $this->http->put('api/payments/recurrency/' . $recurrenceCode . '/cancel');
     }
 
-    /**
-     * @param RequestPayload|array<string, mixed>|null $payload
-     *
-     * @return array<string, mixed>
-     */
-    private function resolvePayload($payload)
-    {
-        if ($payload === null) {
-            return array();
-        }
-
-        if ($payload instanceof RequestPayload) {
-            return $payload->toArray();
-        }
-
-        return $payload;
-    }
 }

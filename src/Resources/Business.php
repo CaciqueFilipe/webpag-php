@@ -2,7 +2,6 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Contracts\RequestPayload;
 use WebPag\Http\ApiResponse;
 use WebPag\Requests\Business\AuthenticateRequest;
 use WebPag\Requests\Business\CreateFranchiseRequest;
@@ -53,17 +52,4 @@ class Business extends AbstractResource
         return $this->http->post('api/franchises', $this->resolvePayload($request));
     }
 
-    /**
-     * @param RequestPayload|array<string, mixed> $payload
-     *
-     * @return array<string, mixed>
-     */
-    private function resolvePayload($payload)
-    {
-        if ($payload instanceof RequestPayload) {
-            return $payload->toArray();
-        }
-
-        return $payload;
-    }
 }
