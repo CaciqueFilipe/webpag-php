@@ -35,6 +35,25 @@ class CreditCardData implements RequestPayload
             'security_code' => $this->securityCode,
         ]);
     }
+
+    /**
+     * Cria uma instância a partir de um array associativo.
+     *
+     * @param array<string, mixed> $data
+     * @return self
+     */
+    public static function fromArray(array $data)
+    {
+        $request = new self();
+
+        $request->number          = $data['number'] ?? null;
+        $request->name            = $data['name'] ?? null;
+        $request->expirationMonth = $data['expiration_month'] ?? null;
+        $request->expirationYear  = $data['expiration_year'] ?? null;
+        $request->securityCode    = $data['security_code'] ?? null;
+
+        return $request;
+    }
 }
 
 class PaymentSplit implements RequestPayload
@@ -58,6 +77,29 @@ class PaymentSplit implements RequestPayload
             'percentage' => $this->percentage,
             'amount' => $this->amount,
         ]);
+    }
+
+    /**
+     * Cria uma instância a partir de um array associativo.
+     *
+     * @param array<string, mixed> $data
+     * @return self
+     */
+    public static function fromArray(array $data)
+    {
+        $request = new self();
+
+        $request->businessId = isset($data['business_id'])
+            ? (int) $data['business_id']
+            : 0;
+        $request->percentage = isset($data['percentage'])
+            ? (float) $data['percentage']
+            : null;
+        $request->amount     = isset($data['amount'])
+            ? (int) $data['amount']
+            : null;
+
+        return $request;
     }
 }
 
@@ -145,6 +187,58 @@ class ProcessPaymentRequest implements RequestPayload
 
         return $data;
     }
+
+    /**
+     * Cria uma instância a partir de um array associativo.
+     *
+     * @param array<string, mixed> $data
+     * @return self
+     */
+    public static function fromArray(array $data)
+    {
+        $request = new self();
+
+        $request->payerId            = isset($data['payer_id'])
+            ? (int) $data['payer_id']
+            : 0;
+        $request->name               = $data['name'] ?? '';
+        $request->amount             = isset($data['amount'])
+            ? (int) $data['amount']
+            : 0;
+        $request->method             = $data['method'] ?? '';
+        $request->installments       = isset($data['installments'])
+            ? (int) $data['installments']
+            : null;
+        $request->notifyPayer        = isset($data['notify_payer'])
+            ? (bool) $data['notify_payer']
+            : null;
+        $request->cardPayerId        = isset($data['card_payer_id'])
+            ? (int) $data['card_payer_id']
+            : null;
+        $request->cardToken          = $data['card_token'] ?? null;
+        $request->dueDate            = $data['due_date'] ?? null;
+        $request->acceptAfterDueDate = isset($data['accept_after_due_date'])
+            ? (bool) $data['accept_after_due_date']
+            : null;
+        $request->notificationUrl    = $data['notification_url'] ?? null;
+        $request->orderId            = $data['order_id'] ?? null;
+        $request->paymentLinkId      = $data['payment_link_id'] ?? null;
+        $request->softDescriptor     = $data['soft_descriptor'] ?? null;
+
+        // Mapeia objeto simples aninhado
+        if (isset($data['card']) && is_array($data['card'])) {
+            $request->card = CreditCardData::fromArray($data['card']);
+        }
+
+        // Mapeia coleção (array) de objetos aninhados
+        if (isset($data['splits']) && is_array($data['splits'])) {
+            $request->splits = array_map(function (array $splitData) {
+                return PaymentSplit::fromArray($splitData);
+            }, $data['splits']);
+        }
+
+        return $request;
+    }
 }
 
 class ListPaymentsRequest implements RequestPayload
@@ -213,6 +307,48 @@ class ListPaymentsRequest implements RequestPayload
             'txid' => $this->txid,
         ]);
     }
+
+    /**
+     * Cria uma instância a partir de um array associativo.
+     *
+     * @param array<string, mixed> $data
+     * @return self
+     */
+    public static function fromArray(array $data)
+    {
+        $request = new self();
+
+        $request->paymentId      = isset($data['payment_id'])
+            ? (int) $data['payment_id']
+            : null;
+        $request->payerId        = isset($data['payer_id'])
+            ? (int) $data['payer_id']
+            : null;
+        $request->page           = isset($data['page'])
+            ? (int) $data['page']
+            : null;
+        $request->createdAtStart = $data['created_at_start'] ?? null;
+        $request->createdAtEnd   = $data['created_at_end'] ?? null;
+        $request->paidAtStart    = $data['paid_at_start'] ?? null;
+        $request->paidAtEnd      = $data['paid_at_end'] ?? null;
+        $request->status         = isset($data['status'])
+            ? (int) $data['status']
+            : null;
+        $request->method         = $data['method'] ?? null;
+        $request->active         = isset($data['active'])
+            ? (bool) $data['active']
+            : null;
+        $request->recurrenceCode = isset($data['recurrence_code'])
+            ? (int) $data['recurrence_code']
+            : null;
+        $request->isRecurrent    = isset($data['is_recurrent'])
+            ? (bool) $data['is_recurrent']
+            : null;
+        $request->orderId        = $data['order_id'] ?? null;
+        $request->txid           = $data['txid'] ?? null;
+
+        return $request;
+    }
 }
 
 class RefundPaymentRequest implements RequestPayload
@@ -228,5 +364,20 @@ class RefundPaymentRequest implements RequestPayload
         return ArrayHelper::filterNull([
             'value' => $this->value,
         ]);
+    }
+
+    /**
+     * Cria uma instância a partir de um array associativo.
+     *
+     * @param array<string, mixed> $data
+     * @return self
+     */
+    public static function fromArray(array $data)
+    {
+        $request = new self();
+        $request->value = isset($data['value'])
+            ? (int) $data['value']
+            : null;
+        return $request;
     }
 }
