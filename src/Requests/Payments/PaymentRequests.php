@@ -252,6 +252,9 @@ class ListPaymentsRequest implements RequestPayload
     /** @var int|null */
     public $page;
 
+    /** @var int|null */
+    public $perPage;
+
     /** @var string|null Y-m-d */
     public $createdAtStart;
 
@@ -294,6 +297,7 @@ class ListPaymentsRequest implements RequestPayload
             'payment_id' => $this->paymentId,
             'payer_id' => $this->payerId,
             'page' => $this->page,
+            'per_page' => $this->perPage,
             'created_at_start' => $this->createdAtStart,
             'created_at_end' => $this->createdAtEnd,
             'paid_at_start' => $this->paidAtStart,
@@ -326,6 +330,9 @@ class ListPaymentsRequest implements RequestPayload
             : null;
         $request->page           = isset($data['page'])
             ? (int) $data['page']
+            : null;
+        $request->perPage = isset($data['per_page'])
+            ? (int) $data['per_page']
             : null;
         $request->createdAtStart = $data['created_at_start'] ?? null;
         $request->createdAtEnd   = $data['created_at_end'] ?? null;
