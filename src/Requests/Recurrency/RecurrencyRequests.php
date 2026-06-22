@@ -111,6 +111,9 @@ class ListRecurrencyRequest implements RequestPayload
     /** @var int|null */
     public $page;
 
+    /** @var int|null */
+    public $perPage;
+
     /**
      * @return array<string, mixed>
      */
@@ -120,6 +123,7 @@ class ListRecurrencyRequest implements RequestPayload
             'payer_id' => $this->payerId,
             'recurrence_code' => $this->recurrenceCode,
             'page' => $this->page,
+            'per_page' => $this->perPage,
         ]);
     }
 
@@ -139,6 +143,9 @@ class ListRecurrencyRequest implements RequestPayload
         $request->recurrenceCode = $data['recurrence_code'] ?? null;
         $request->page           = isset($data['page'])
             ? (int) $data['page']
+            : null;
+        $request->perPage = isset($data['per_page'])
+            ? (int) $data['per_page']
             : null;
 
         return $request;
