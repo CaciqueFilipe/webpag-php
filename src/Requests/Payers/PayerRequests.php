@@ -56,6 +56,34 @@ class CreatePayerRequest implements RequestPayload
 
         return $data;
     }
+
+    /**
+     * Cria uma instância a partir de um array associativo.
+     *
+     * @param array<string, mixed> $data
+     * @return self
+     */
+    public static function fromArray(array $data)
+    {
+        $request = new self();
+
+        $request->firstName   = $data['first_name'] ?? '';
+        $request->lastName    = $data['last_name'] ?? '';
+        $request->email       = $data['email'] ?? null;
+        $request->isBusiness  = isset($data['is_business'])
+            ? (bool) $data['is_business']
+            : false;
+        $request->cpfCnpj     = $data['cpf_cnpj'] ?? '';
+        $request->phoneNumber = $data['phone_number'] ?? null;
+        $request->gender      = $data['gender'] ?? null;
+        $request->birthDate   = $data['birth_date'] ?? null;
+
+        if (isset($data['address']) && is_array($data['address'])) {
+            $request->address = Address::fromArray($data['address']);
+        }
+
+        return $request;
+    }
 }
 
 class UpdatePayerRequest implements RequestPayload
@@ -105,6 +133,33 @@ class UpdatePayerRequest implements RequestPayload
 
         return $data;
     }
+
+    /**
+     * Cria uma instância a partir de um array associativo.
+     *
+     * @param array<string, mixed> $data
+     * @return self
+     */
+    public static function fromArray(array $data)
+    {
+        $request = new self();
+
+        $request->firstName   = $data['first_name'] ?? null;
+        $request->lastName    = $data['last_name'] ?? null;
+        $request->email       = $data['email'] ?? null;
+        $request->isBusiness  = isset($data['is_business'])
+            ? (bool) $data['is_business']
+            : null;
+        $request->cpfCnpj     = $data['cpf_cnpj'] ?? null;
+        $request->phoneNumber = $data['phone_number'] ?? null;
+        $request->birthDate   = $data['birth_date'] ?? null;
+
+        if (isset($data['address']) && is_array($data['address'])) {
+            $request->address = Address::fromArray($data['address']);
+        }
+
+        return $request;
+    }
 }
 
 class SaveCreditCardRequest implements RequestPayload
@@ -140,5 +195,25 @@ class SaveCreditCardRequest implements RequestPayload
             'expiration_year' => $this->expirationYear,
             'security_code' => $this->securityCode,
         ]);
+    }
+
+    /**
+     * Cria uma instância a partir de um array associativo.
+     *
+     * @param array<string, mixed> $data
+     * @return self
+     */
+    public static function fromArray(array $data)
+    {
+        $request = new self();
+
+        $request->cardToken       = $data['card_token'] ?? null;
+        $request->number          = $data['number'] ?? null;
+        $request->name            = $data['name'] ?? null;
+        $request->expirationMonth = $data['expiration_month'] ?? null;
+        $request->expirationYear  = $data['expiration_year'] ?? null;
+        $request->securityCode    = $data['security_code'] ?? null;
+
+        return $request;
     }
 }
