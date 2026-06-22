@@ -7,7 +7,7 @@ on:
     branches: [ main, master ]
 
 jobs:
-  test:
+  phpunit-tests:
     runs-on: ubuntu-latest
 
     strategy:
@@ -18,7 +18,7 @@ jobs:
           - php: 8.4
             dependency-version: prefer-lowest
 
-    name: PHP ${{ matrix.php }} - ${{ matrix.dependency-version }}
+    name: PHP Unit (${{ matrix.php }} - ${{ matrix.dependency-version }})
 
     steps:
       - uses: actions/checkout@v4
@@ -64,9 +64,9 @@ jobs:
             echo "PHPStan not installed, skipping."
           fi
 
-  lint:
+  syntax-check:
     runs-on: ubuntu-latest
-    name: Syntax check
+    name: Code Syntax Check (parallel-lint)
 
     steps:
       - uses: actions/checkout@v4
@@ -79,3 +79,11 @@ jobs:
 
       - name: Lint PHP files
         run: parallel-lint --exclude vendor .
+
+  ci-status:
+    runs-on: ubuntu-latest
+    name: CI Status Check
+    needs: [phpunit-tests, syntax-check]
+    steps:
+      - name: All checks passed successfully
+        run: echo "Build concluída com sucesso! Código pronto para merge."
