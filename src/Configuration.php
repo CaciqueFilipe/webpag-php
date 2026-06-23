@@ -4,7 +4,7 @@ namespace WebPag;
 
 class Configuration
 {
-    const DEFAULT_BASE_URL = 'https://api.webpag.com.br';
+    public const DEFAULT_BASE_URL = 'https://api.webpag.com.br';
 
     /** @var string */
     private $apiToken;

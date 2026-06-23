@@ -4,9 +4,9 @@ namespace WebPag\Enums;
 
 final class RecurrencyFrequency
 {
-    const MONTHLY = 'monthly';
-    const BIMONTHLY = 'bimonthly';
-    const QUARTERLY = 'quarterly';
-    const SEMIANNUAL = 'semiannual';
-    const YEARLY = 'yearly';
+    public const MONTHLY = 'monthly';
+    public const BIMONTHLY = 'bimonthly';
+    public const QUARTERLY = 'quarterly';
+    public const SEMIANNUAL = 'semiannual';
+    public const YEARLY = 'yearly';
 }

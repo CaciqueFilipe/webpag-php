@@ -2,10 +2,10 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Responses\Transfers\Transfer;
-use WebPag\Requests\Transfers\ListTransfersRequest;
-use WebPag\Requests\Transfers\CreateTransferRequest;
 use WebPag\Requests\Transfers\ChangeTransferStatusDevRequest;
+use WebPag\Requests\Transfers\CreateTransferRequest;
+use WebPag\Requests\Transfers\ListTransfersRequest;
+use WebPag\Responses\Transfers\Transfer;
 
 class Transfers extends AbstractResource
 {

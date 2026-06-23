@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Exemplo: Criar pagador usando DTO tipado
  *
@@ -7,10 +8,10 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use WebPag\WebPag;
 use WebPag\Enums\Gender;
 use WebPag\Requests\Payers\Address;
 use WebPag\Requests\Payers\CreatePayerRequest;
+use WebPag\WebPag;
 
 $webpag = WebPag::env();
 

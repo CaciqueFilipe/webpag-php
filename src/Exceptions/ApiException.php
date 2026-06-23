@@ -44,7 +44,7 @@ class ApiException extends WebPagException
      */
     public function getErrorMessage()
     {
-        if (!is_array($this->responseBody)) {
+        if (! is_array($this->responseBody)) {
             return null;
         }
 

@@ -28,10 +28,10 @@ class CreditCard implements ResponsePayload
     {
         $card = new self();
 
-        $card->id          = isset($data['id']) ? (int)$data['id'] : null;
+        $card->id = isset($data['id']) ? (int)$data['id'] : null;
         $card->lastNumbers = $data['last_numbers'] ?? null;
-        $card->active      = isset($data['active']) ? (bool)$data['active'] : null;
-        $card->createdAt   = $data['created_at'] ?? null;
+        $card->active = isset($data['active']) ? (bool)$data['active'] : null;
+        $card->createdAt = $data['created_at'] ?? null;
 
         return $card;
     }
@@ -42,10 +42,10 @@ class CreditCard implements ResponsePayload
     public function toArray(): array
     {
         return [
-            'id'           => $this->id,
+            'id' => $this->id,
             'last_numbers' => $this->lastNumbers,
-            'active'       => $this->active,
-            'created_at'   => $this->createdAt,
+            'active' => $this->active,
+            'created_at' => $this->createdAt,
         ];
     }
 }

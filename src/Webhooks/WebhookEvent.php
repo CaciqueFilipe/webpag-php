@@ -6,11 +6,11 @@ use WebPag\Contracts\ResponsePayload;
 
 class WebhookEvent
 {
-    const TYPE_PAYMENT = 'payment';
-    const TYPE_TRANSFER = 'transfer';
-    const TYPE_REFUND = 'refund';
-    const TYPE_UNKNOWN = 'unknown';
-    const TYPE_RECURRENCY = 'recurrency';
+    public const TYPE_PAYMENT = 'payment';
+    public const TYPE_TRANSFER = 'transfer';
+    public const TYPE_REFUND = 'refund';
+    public const TYPE_UNKNOWN = 'unknown';
+    public const TYPE_RECURRENCY = 'recurrency';
 
     /** @var string */
     private $type;

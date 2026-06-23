@@ -20,14 +20,14 @@ class WebhookParser
         if (is_string($payload)) {
             $decoded = json_decode($payload, true);
 
-            if (!is_array($decoded)) {
+            if (! is_array($decoded)) {
                 throw new WebPagException('Payload de webhook inválido: JSON malformado.');
             }
 
             $payload = $decoded;
         }
 
-        if (!is_array($payload)) {
+        if (! is_array($payload)) {
             throw new WebPagException('Payload de webhook inválido.');
         }
 

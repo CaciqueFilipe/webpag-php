@@ -5,16 +5,16 @@ namespace WebPag\Tests;
 use PHPUnit\Framework\TestCase;
 use WebPag\Configuration;
 use WebPag\Environment;
-use WebPag\WebPag;
 use WebPag\Http\HttpClient;
 use WebPag\Resources\Business;
 use WebPag\Resources\Installments;
-use WebPag\Resources\PaymentLinks;
 use WebPag\Resources\Payers;
+use WebPag\Resources\PaymentLinks;
 use WebPag\Resources\Payments;
 use WebPag\Resources\Recurrency;
 use WebPag\Resources\Transfers;
 use WebPag\Webhooks\WebhookParser;
+use WebPag\WebPag;
 
 class WebPagTest extends TestCase
 {

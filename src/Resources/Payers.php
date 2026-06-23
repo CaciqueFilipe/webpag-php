@@ -3,11 +3,11 @@
 namespace WebPag\Resources;
 
 use WebPag\Http\ApiResponse;
-use WebPag\Responses\Payers\Payer;
-use WebPag\Responses\Card\CreditCard;
 use WebPag\Requests\Payers\CreatePayerRequest;
-use WebPag\Requests\Payers\UpdatePayerRequest;
 use WebPag\Requests\Payers\SaveCreditCardRequest;
+use WebPag\Requests\Payers\UpdatePayerRequest;
+use WebPag\Responses\Card\CreditCard;
+use WebPag\Responses\Payers\Payer;
 
 class Payers extends AbstractResource
 {

@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Payments;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class RefundPaymentRequest implements RequestPayload
 {
@@ -32,6 +32,7 @@ class RefundPaymentRequest implements RequestPayload
         $request->value = isset($data['value'])
             ? (int) $data['value']
             : null;
+
         return $request;
     }
 }

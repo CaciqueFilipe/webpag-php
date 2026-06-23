@@ -2,11 +2,11 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Responses\Payments\Refund;
-use WebPag\Responses\Payments\Payment;
 use WebPag\Requests\Payments\ListPaymentsRequest;
-use WebPag\Requests\Payments\RefundPaymentRequest;
 use WebPag\Requests\Payments\ProcessPaymentRequest;
+use WebPag\Requests\Payments\RefundPaymentRequest;
+use WebPag\Responses\Payments\Payment;
+use WebPag\Responses\Payments\Refund;
 
 class Payments extends AbstractResource
 {
@@ -84,7 +84,7 @@ class Payments extends AbstractResource
     {
         $response = $this->http->put(
             'api/payments/' . $paymentId . '/refund',
-            $this->resolvePayload($request !== null ? $request : array())
+            $this->resolvePayload($request !== null ? $request : [])
         );
 
         return Refund::fromArray($response->getData());

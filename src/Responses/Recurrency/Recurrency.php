@@ -2,11 +2,11 @@
 
 namespace WebPag\Responses\Recurrency;
 
-use WebPag\Responses\Payers\Payer;
 use WebPag\Contracts\ResponsePayload;
-use WebPag\Responses\Payments\Refund;
 use WebPag\Responses\Business\Business;
+use WebPag\Responses\Payers\Payer;
 use WebPag\Responses\Payments\BankSlip;
+use WebPag\Responses\Payments\Refund;
 
 class Recurrency implements ResponsePayload
 {
@@ -215,7 +215,7 @@ class Recurrency implements ResponsePayload
             'start_date' => $this->startDate,
             'next_date' => $this->nextDate,
             'next_recurrence_date' => $this->nextRecurrenceDate,
-            'refunds' => $this->refunds ? array_map(fn($refund) => $refund->toArray(), $this->refunds) : null,
+            'refunds' => $this->refunds ? array_map(fn ($refund) => $refund->toArray(), $this->refunds) : null,
             'created_at' => $this->createdAt,
             'paid_at' => $this->paidAt,
             'updated_at' => $this->updatedAt,

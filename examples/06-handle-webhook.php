@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Exemplo: Processar um webhook da WebPag
  *
@@ -16,11 +17,11 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use WebPag\WebPag;
 use WebPag\Enums\PaymentStatus;
-use WebPag\Webhooks\WebhookParser;
 use WebPag\Responses\Payments\Payment;
 use WebPag\Responses\Transfers\Transfer;
+use WebPag\Webhooks\WebhookParser;
+use WebPag\WebPag;
 
 // --- Simulação do ambiente de uma requisição HTTP ---
 
@@ -42,7 +43,7 @@ echo "-------------------------------------" . PHP_EOL;
 
 // Etapa 1: Validar a assinatura
 // Isso é CRUCIAL para garantir que a requisição veio da WebPag e não foi adulterada.
-if (!WebhookParser::verifySignature($rawPayload, $signature, $apiToken)) {
+if (! WebhookParser::verifySignature($rawPayload, $signature, $apiToken)) {
     // Em um cenário real, você retornaria um status HTTP 401 ou 403.
     die("Erro: Assinatura do Webhook inválida!");
 }

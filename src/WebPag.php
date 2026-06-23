@@ -3,13 +3,13 @@
 namespace WebPag;
 
 use WebPag\Http\HttpClient;
-use WebPag\Resources\Payers;
 use WebPag\Resources\Business;
-use WebPag\Resources\Payments;
-use WebPag\Resources\Transfers;
-use WebPag\Resources\Recurrency;
 use WebPag\Resources\Installments;
+use WebPag\Resources\Payers;
 use WebPag\Resources\PaymentLinks;
+use WebPag\Resources\Payments;
+use WebPag\Resources\Recurrency;
+use WebPag\Resources\Transfers;
 use WebPag\Webhooks\WebhookParser;
 
 class WebPag

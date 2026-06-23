@@ -2,8 +2,8 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Http\HttpClient;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Http\HttpClient;
 
 abstract class AbstractResource
 {
@@ -28,7 +28,7 @@ abstract class AbstractResource
     protected function resolvePayload($payload)
     {
         if ($payload === null) {
-            return array();
+            return [];
         }
 
         if ($payload instanceof RequestPayload) {

@@ -4,9 +4,9 @@ namespace WebPag\Enums;
 
 final class PixKeyTypeString
 {
-    const CPF = 'cpf';
-    const CNPJ = 'cnpj';
-    const EMAIL = 'email';
-    const PHONE = 'phone';
-    const RANDOM = 'random';
+    public const CPF = 'cpf';
+    public const CNPJ = 'cnpj';
+    public const EMAIL = 'email';
+    public const PHONE = 'phone';
+    public const RANDOM = 'random';
 }

@@ -1,17 +1,18 @@
 <?php
+
 /**
  * Exemplo: Listar pagamentos com filtros
  *
  * Este exemplo demonstra como listar os pagamentos, aplicando
  * filtros por status e data.
- * 
+ *
  * Uso: WEBPAG_API_TOKEN=seu-token php examples/05-list-payments.php
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use WebPag\WebPag;
 use WebPag\Enums\PaymentStatus;
+use WebPag\WebPag;
 
 // 1. Inicie o SDK
 $webpag = WebPag::env();
@@ -31,7 +32,8 @@ try {
     foreach ($payments as $payment) {
         echo sprintf(
             "- ID: %d, Status: %s, Valor: %.2f",
-            $payment->id, $payment->statusLabel,
+            $payment->id,
+            $payment->statusLabel,
             $payment->amount / 100
         ) . PHP_EOL;
     }

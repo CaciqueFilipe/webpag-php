@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Payers;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class CreatePayerRequest implements RequestPayload
 {
@@ -67,16 +67,16 @@ class CreatePayerRequest implements RequestPayload
     {
         $request = new self();
 
-        $request->firstName   = $data['first_name'] ?? '';
-        $request->lastName    = $data['last_name'] ?? '';
-        $request->email       = $data['email'] ?? null;
-        $request->isBusiness  = isset($data['is_business'])
+        $request->firstName = $data['first_name'] ?? '';
+        $request->lastName = $data['last_name'] ?? '';
+        $request->email = $data['email'] ?? null;
+        $request->isBusiness = isset($data['is_business'])
             ? (bool) $data['is_business']
             : false;
-        $request->cpfCnpj     = $data['cpf_cnpj'] ?? '';
+        $request->cpfCnpj = $data['cpf_cnpj'] ?? '';
         $request->phoneNumber = $data['phone_number'] ?? null;
-        $request->gender      = $data['gender'] ?? null;
-        $request->birthDate   = $data['birth_date'] ?? null;
+        $request->gender = $data['gender'] ?? null;
+        $request->birthDate = $data['birth_date'] ?? null;
 
         if (isset($data['address']) && is_array($data['address'])) {
             $request->address = Address::fromArray($data['address']);

@@ -2,12 +2,12 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Responses\Card\CardToken;
-use WebPag\Responses\Business\Franchise;
-use WebPag\Responses\Business\Authentication;
 use WebPag\Requests\Business\AuthenticateRequest;
 use WebPag\Requests\Business\CreateFranchiseRequest;
+use WebPag\Responses\Business\Authentication;
 use WebPag\Responses\Business\Business as BusinessResponse;
+use WebPag\Responses\Business\Franchise;
+use WebPag\Responses\Card\CardToken;
 
 class Business extends AbstractResource
 {

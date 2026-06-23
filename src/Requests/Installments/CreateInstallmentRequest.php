@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Installments;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class CreateInstallmentRequest implements RequestPayload
 {
@@ -46,17 +46,17 @@ class CreateInstallmentRequest implements RequestPayload
     {
         $request = new self();
 
-        $request->amount             = isset($data['amount'])
+        $request->amount = isset($data['amount'])
             ? (int) $data['amount']
             : 0;
-        $request->firstDate          = $data['first_date'] ?? '';
+        $request->firstDate = $data['first_date'] ?? '';
         $request->numberInstallments = isset($data['number_installments'])
             ? (int) $data['number_installments']
             : 0;
-        $request->payer              = isset($data['payer'])
+        $request->payer = isset($data['payer'])
             ? (int) $data['payer']
             : 0;
-        
+
         // Garante que mantém true, false ou null sem forçar um cast incorreto
         $request->acceptAfterDueDate = isset($data['accept_after_due_date'])
             ? (bool) $data['accept_after_due_date']

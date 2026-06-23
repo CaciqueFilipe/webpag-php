@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Recurrency;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class ListRecurrencyRequest implements RequestPayload
 {
@@ -42,11 +42,11 @@ class ListRecurrencyRequest implements RequestPayload
     {
         $request = new self();
 
-        $request->payerId        = isset($data['payer_id'])
+        $request->payerId = isset($data['payer_id'])
             ? (int) $data['payer_id']
             : null;
         $request->recurrenceCode = $data['recurrence_code'] ?? null;
-        $request->page           = isset($data['page'])
+        $request->page = isset($data['page'])
             ? (int) $data['page']
             : null;
         $request->perPage = isset($data['per_page'])

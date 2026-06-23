@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Recurrency;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class UpdateRecurrencyRequest implements RequestPayload
 {
@@ -50,18 +50,18 @@ class UpdateRecurrencyRequest implements RequestPayload
     {
         $request = new self();
 
-        $request->name         = $data['name'] ?? null;
-        $request->amount       = isset($data['amount'])
+        $request->name = $data['name'] ?? null;
+        $request->amount = isset($data['amount'])
             ? (int) $data['amount']
             : null;
         $request->installments = isset($data['installments'])
             ? (int) $data['installments']
             : null;
-        $request->frequency    = $data['frequency'] ?? null;
-        $request->cardPayerId  = isset($data['card_payer_id'])
+        $request->frequency = $data['frequency'] ?? null;
+        $request->cardPayerId = isset($data['card_payer_id'])
             ? (int) $data['card_payer_id']
             : null;
-        $request->nextDate     = $data['next_date'] ?? null;
+        $request->nextDate = $data['next_date'] ?? null;
 
         return $request;
     }

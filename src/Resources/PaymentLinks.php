@@ -2,8 +2,8 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Responses\PaymentLinks\PaymentLink;
 use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
+use WebPag\Responses\PaymentLinks\PaymentLink;
 
 class PaymentLinks extends AbstractResource
 {

@@ -1,18 +1,19 @@
 <?php
+
 /**
  * Exemplo: Processar um pagamento com cartão de crédito
  *
  * Este exemplo assume que você já tem um `payer_id` e um `card_id`
  * (obtido ao salvar um cartão para um pagador).
- * 
+ *
  * Uso: WEBPAG_API_TOKEN=seu-token php examples/03-process-credit-card-payment.php
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use WebPag\WebPag;
 use WebPag\Enums\PaymentMethod;
 use WebPag\Requests\Payments\ProcessPaymentRequest;
+use WebPag\WebPag;
 
 // 1. Inicie o SDK
 $webpag = WebPag::env();

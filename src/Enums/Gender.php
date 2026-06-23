@@ -4,6 +4,6 @@ namespace WebPag\Enums;
 
 final class Gender
 {
-    const MALE = 'M';
-    const FEMALE = 'F';
+    public const MALE = 'M';
+    public const FEMALE = 'F';
 }

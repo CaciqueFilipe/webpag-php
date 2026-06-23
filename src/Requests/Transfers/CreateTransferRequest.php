@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Transfers;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class CreateTransferRequest implements RequestPayload
 {

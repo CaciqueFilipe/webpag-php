@@ -31,6 +31,7 @@ class ChangeTransferStatusDevRequest implements RequestPayload
         $request->status = isset($data['status'])
             ? (int) $data['status']
             : 0;
+
         return $request;
     }
 }

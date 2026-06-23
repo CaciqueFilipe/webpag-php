@@ -4,7 +4,7 @@ namespace WebPag\Enums;
 
 final class PaymentMethod
 {
-    const CREDIT_CARD = 'credit_card';
-    const PIX = 'pix';
-    const BANK_SLIP = 'bank_slip';
+    public const CREDIT_CARD = 'credit_card';
+    public const PIX = 'pix';
+    public const BANK_SLIP = 'bank_slip';
 }

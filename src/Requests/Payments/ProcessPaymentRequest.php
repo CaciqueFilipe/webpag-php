@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Payments;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class ProcessPaymentRequest implements RequestPayload
 {
@@ -100,32 +100,32 @@ class ProcessPaymentRequest implements RequestPayload
     {
         $request = new self();
 
-        $request->payerId            = isset($data['payer_id'])
+        $request->payerId = isset($data['payer_id'])
             ? (int) $data['payer_id']
             : 0;
-        $request->name               = $data['name'] ?? '';
-        $request->amount             = isset($data['amount'])
+        $request->name = $data['name'] ?? '';
+        $request->amount = isset($data['amount'])
             ? (int) $data['amount']
             : 0;
-        $request->method             = $data['method'] ?? '';
-        $request->installments       = isset($data['installments'])
+        $request->method = $data['method'] ?? '';
+        $request->installments = isset($data['installments'])
             ? (int) $data['installments']
             : null;
-        $request->notifyPayer        = isset($data['notify_payer'])
+        $request->notifyPayer = isset($data['notify_payer'])
             ? (bool) $data['notify_payer']
             : null;
-        $request->cardPayerId        = isset($data['card_payer_id'])
+        $request->cardPayerId = isset($data['card_payer_id'])
             ? (int) $data['card_payer_id']
             : null;
-        $request->cardToken          = $data['card_token'] ?? null;
-        $request->dueDate            = $data['due_date'] ?? null;
+        $request->cardToken = $data['card_token'] ?? null;
+        $request->dueDate = $data['due_date'] ?? null;
         $request->acceptAfterDueDate = isset($data['accept_after_due_date'])
             ? (bool) $data['accept_after_due_date']
             : null;
-        $request->notificationUrl    = $data['notification_url'] ?? null;
-        $request->orderId            = $data['order_id'] ?? null;
-        $request->paymentLinkId      = $data['payment_link_id'] ?? null;
-        $request->softDescriptor     = $data['soft_descriptor'] ?? null;
+        $request->notificationUrl = $data['notification_url'] ?? null;
+        $request->orderId = $data['order_id'] ?? null;
+        $request->paymentLinkId = $data['payment_link_id'] ?? null;
+        $request->softDescriptor = $data['soft_descriptor'] ?? null;
 
         // Mapeia objeto simples aninhado
         if (isset($data['card']) && is_array($data['card'])) {

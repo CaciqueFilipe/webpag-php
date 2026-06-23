@@ -1,16 +1,17 @@
 <?php
+
 /**
  * Exemplo: Criar um link de pagamento
  *
  * Este exemplo demonstra como criar um link de pagamento simples.
- * 
+ *
  * Uso: WEBPAG_API_TOKEN=seu-token php examples/04-create-payment-link.php
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use WebPag\WebPag;
 use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
+use WebPag\WebPag;
 
 // 1. Inicie o SDK
 $webpag = WebPag::env();

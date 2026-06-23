@@ -2,10 +2,9 @@
 
 namespace WebPag\Enums;
 
-
 final class PaymentLinkMethod
 {
-    const CREDIT_CARD = 'credit_card';
-    const PIX = 'pix';
-    const BANKSLIP = 'bankslip';
+    public const CREDIT_CARD = 'credit_card';
+    public const PIX = 'pix';
+    public const BANKSLIP = 'bankslip';
 }

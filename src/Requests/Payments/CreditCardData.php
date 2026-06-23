@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Payments;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class CreditCardData implements RequestPayload
 {
@@ -46,11 +46,11 @@ class CreditCardData implements RequestPayload
     {
         $request = new self();
 
-        $request->number          = $data['number'] ?? null;
-        $request->name            = $data['name'] ?? null;
+        $request->number = $data['number'] ?? null;
+        $request->name = $data['name'] ?? null;
         $request->expirationMonth = $data['expiration_month'] ?? null;
-        $request->expirationYear  = $data['expiration_year'] ?? null;
-        $request->securityCode    = $data['security_code'] ?? null;
+        $request->expirationYear = $data['expiration_year'] ?? null;
+        $request->securityCode = $data['security_code'] ?? null;
 
         return $request;
     }

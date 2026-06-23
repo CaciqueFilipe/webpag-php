@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Transfers;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class ListTransfersRequest implements RequestPayload
 {
@@ -34,7 +34,7 @@ class ListTransfersRequest implements RequestPayload
     {
         $request = new self();
 
-        $request->page    = isset($data['page'])
+        $request->page = isset($data['page'])
             ? (int) $data['page']
             : null;
         $request->perPage = isset($data['per_page'])

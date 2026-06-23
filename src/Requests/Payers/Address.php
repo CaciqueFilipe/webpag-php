@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Payers;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class Address implements RequestPayload
 {
@@ -54,13 +54,13 @@ class Address implements RequestPayload
     {
         $address = new self();
 
-        $address->zipCode  = $data['zip_code'] ?? null;
-        $address->street   = $data['street'] ?? null;
-        $address->number   = $data['number'] ?? null;
+        $address->zipCode = $data['zip_code'] ?? null;
+        $address->street = $data['street'] ?? null;
+        $address->number = $data['number'] ?? null;
         $address->district = $data['district'] ?? null;
-        $address->city     = $data['city'] ?? null;
-        $address->state    = $data['state'] ?? null;
-        $address->country  = $data['country'] ?? null;
+        $address->city = $data['city'] ?? null;
+        $address->state = $data['state'] ?? null;
+        $address->country = $data['country'] ?? null;
 
         return $address;
     }

@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Payments;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class PaymentSplit implements RequestPayload
 {
@@ -44,7 +44,7 @@ class PaymentSplit implements RequestPayload
         $request->percentage = isset($data['percentage'])
             ? (float) $data['percentage']
             : null;
-        $request->amount     = isset($data['amount'])
+        $request->amount = isset($data['amount'])
             ? (int) $data['amount']
             : null;
 

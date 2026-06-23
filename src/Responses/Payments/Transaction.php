@@ -40,15 +40,15 @@ class Transaction implements ResponsePayload
     public static function fromArray(array $data)
     {
         $instance = new self();
-        $instance->id             = isset($data['id']) ? (int)$data['id'] : null;
-        $instance->type           = isset($data['type']) ? (int)$data['type'] : null;
-        $instance->typeLabel      = $data['type_label'] ?? null;
-        $instance->transactionId  = $data['transaction_id'] ?? null;
+        $instance->id = isset($data['id']) ? (int)$data['id'] : null;
+        $instance->type = isset($data['type']) ? (int)$data['type'] : null;
+        $instance->typeLabel = $data['type_label'] ?? null;
+        $instance->transactionId = $data['transaction_id'] ?? null;
         $instance->responseStatus = $data['response_status'] ?? null;
-        $instance->errors         = $data['errors'] ?? null;
-        $instance->status         = isset($data['status']) ? (int)$data['status'] : null;
-        $instance->statusLabel    = $data['status_label'] ?? null;
-        $instance->createdAt      = $data['created_at'] ?? null;
+        $instance->errors = $data['errors'] ?? null;
+        $instance->status = isset($data['status']) ? (int)$data['status'] : null;
+        $instance->statusLabel = $data['status_label'] ?? null;
+        $instance->createdAt = $data['created_at'] ?? null;
 
         return $instance;
     }
@@ -59,15 +59,15 @@ class Transaction implements ResponsePayload
     public function toArray(): array
     {
         return [
-            'id'              => $this->id,
-            'type'            => $this->type,
-            'type_label'      => $this->typeLabel,
-            'transaction_id'  => $this->transactionId,
+            'id' => $this->id,
+            'type' => $this->type,
+            'type_label' => $this->typeLabel,
+            'transaction_id' => $this->transactionId,
             'response_status' => $this->responseStatus,
-            'errors'          => $this->errors,
-            'status'          => $this->status,
-            'status_label'    => $this->statusLabel,
-            'created_at'      => $this->createdAt,
+            'errors' => $this->errors,
+            'status' => $this->status,
+            'status_label' => $this->statusLabel,
+            'created_at' => $this->createdAt,
         ];
     }
 }

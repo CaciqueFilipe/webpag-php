@@ -4,12 +4,12 @@ namespace WebPag\Tests;
 
 use PHPUnit\Framework\TestCase;
 use WebPag\Enums\PaymentStatus;
-use WebPag\Webhooks\WebhookEvent;
-use WebPag\Responses\Payments\Payment;
-use WebPag\Responses\Transfers\Transfer;
-use WebPag\Responses\Payments\Refund;
-use WebPag\Webhooks\WebhookParser;
 use WebPag\Exceptions\WebPagException;
+use WebPag\Responses\Payments\Payment;
+use WebPag\Responses\Payments\Refund;
+use WebPag\Responses\Transfers\Transfer;
+use WebPag\Webhooks\WebhookEvent;
+use WebPag\Webhooks\WebhookParser;
 
 class WebhookParserTest extends TestCase
 {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Exemplo: Processar pagamento PIX
  *
@@ -7,9 +8,9 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use WebPag\WebPag;
 use WebPag\Enums\PaymentMethod;
 use WebPag\Requests\Payments\ProcessPaymentRequest;
+use WebPag\WebPag;
 
 // Cria instância a partir de variáveis de ambiente
 $webpag = WebPag::env();

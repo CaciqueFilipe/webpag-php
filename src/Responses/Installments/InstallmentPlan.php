@@ -2,8 +2,8 @@
 
 namespace WebPag\Responses\Installments;
 
-use WebPag\Responses\Payers\Payer;
 use WebPag\Contracts\ResponsePayload;
+use WebPag\Responses\Payers\Payer;
 
 class InstallmentPlan implements ResponsePayload
 {

@@ -34,7 +34,7 @@ class ApiResponse implements ArrayAccess, JsonSerializable
         $contents = (string) $response->getBody();
         $decoded = json_decode($contents, true);
 
-        if (!is_array($decoded)) {
+        if (! is_array($decoded)) {
             $decoded = ['raw' => $contents];
         }
 

@@ -2,9 +2,8 @@
 
 namespace WebPag\Enums;
 
-
 final class TransferType
 {
-    const NORMAL = 10;
-    const EXPRESS = 20;
+    public const NORMAL = 10;
+    public const EXPRESS = 20;
 }

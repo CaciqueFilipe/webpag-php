@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Installments;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class ListInstallmentsRequest implements RequestPayload
 {
@@ -41,7 +41,7 @@ class ListInstallmentsRequest implements RequestPayload
         $request->payerId = isset($data['payer_id'])
             ? (int) $data['payer_id']
             : null;
-        $request->page    = isset($data['page'])
+        $request->page = isset($data['page'])
             ? (int) $data['page']
             : null;
         $request->perPage = isset($data['per_page'])

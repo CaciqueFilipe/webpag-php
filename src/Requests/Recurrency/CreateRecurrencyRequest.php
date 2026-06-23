@@ -2,9 +2,9 @@
 
 namespace WebPag\Requests\Recurrency;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
 use WebPag\Requests\Payments\CreditCardData;
+use WebPag\Support\ArrayHelper;
 
 class CreateRecurrencyRequest implements RequestPayload
 {
@@ -72,25 +72,25 @@ class CreateRecurrencyRequest implements RequestPayload
     {
         $request = new self();
 
-        $request->payerId      = isset($data['payer_id'])
+        $request->payerId = isset($data['payer_id'])
             ? (int) $data['payer_id']
             : 0;
-        $request->name         = $data['name'] ?? '';
-        $request->frequency    = $data['frequency'] ?? '';
-        $request->startDate    = $data['start_date'] ?? '';
-        $request->amount       = isset($data['amount'])
+        $request->name = $data['name'] ?? '';
+        $request->frequency = $data['frequency'] ?? '';
+        $request->startDate = $data['start_date'] ?? '';
+        $request->amount = isset($data['amount'])
             ? (int) $data['amount']
             : 0;
         $request->installments = isset($data['installments'])
             ? (int) $data['installments']
             : null;
-        $request->notifyPayer  = isset($data['notify_payer'])
+        $request->notifyPayer = isset($data['notify_payer'])
             ? (bool) $data['notify_payer']
             : null;
-        $request->cardPayerId  = isset($data['card_payer_id'])
+        $request->cardPayerId = isset($data['card_payer_id'])
             ? (int) $data['card_payer_id']
             : null;
-        $request->cardToken    = $data['card_token'] ?? null;
+        $request->cardToken = $data['card_token'] ?? null;
 
         if (isset($data['card']) && is_array($data['card'])) {
             $request->card = CreditCardData::fromArray($data['card']);

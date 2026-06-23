@@ -27,7 +27,7 @@ class Business implements ResponsePayload
     public static function fromArray(array $data)
     {
         $instance = new self();
-        $instance->id   = isset($data['id']) ? (int)$data['id'] : null;
+        $instance->id = isset($data['id']) ? (int)$data['id'] : null;
         $instance->name = $data['name'] ?? null;
         $instance->notificationEmail = $data['notification_email'] ?? null;
         $instance->cnpj = $data['cnpj'] ?? null;
@@ -41,7 +41,7 @@ class Business implements ResponsePayload
     public function toArray(): array
     {
         return array_filter([
-            'id'   => $this->id,
+            'id' => $this->id,
             'name' => $this->name,
             'notification_email' => $this->notificationEmail,
             'cnpj' => $this->cnpj,

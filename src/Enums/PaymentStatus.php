@@ -7,13 +7,13 @@ namespace WebPag\Enums;
  */
 class PaymentStatus
 {
-    const PENDING = 10;
-    const PROCESSING = 20;
-    const CANCELED = 30;
-    const PAID = 40;
-    const REFUNDED = 50;
-    const CHARGEBACK = 60;
-    const FAILED = 70;
-    const IN_PROTEST = 80;
-    const CONTESTATION = 90;
+    public const PENDING = 10;
+    public const PROCESSING = 20;
+    public const CANCELED = 30;
+    public const PAID = 40;
+    public const REFUNDED = 50;
+    public const CHARGEBACK = 60;
+    public const FAILED = 70;
+    public const IN_PROTEST = 80;
+    public const CONTESTATION = 90;
 }

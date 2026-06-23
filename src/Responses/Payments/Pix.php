@@ -49,18 +49,18 @@ class Pix implements ResponsePayload
     public static function fromArray(array $data)
     {
         $instance = new self();
-        $instance->id             = isset($data['id']) ? (int)$data['id'] : null;
-        $instance->uuid           = $data['uuid'] ?? null;
-        $instance->businessId     = isset($data['business_id']) ? (int)$data['business_id'] : null;
-        $instance->paymentId      = isset($data['payment_id']) ? (int)$data['payment_id'] : null;
-        $instance->txid           = $data['txid'] ?? null;
-        $instance->key            = $data['key'] ?? null;
-        $instance->qrcodeData     = $data['qrcode_data'] ?? null;
-        $instance->amount         = isset($data['amount']) ? (int)$data['amount'] : null;
+        $instance->id = isset($data['id']) ? (int)$data['id'] : null;
+        $instance->uuid = $data['uuid'] ?? null;
+        $instance->businessId = isset($data['business_id']) ? (int)$data['business_id'] : null;
+        $instance->paymentId = isset($data['payment_id']) ? (int)$data['payment_id'] : null;
+        $instance->txid = $data['txid'] ?? null;
+        $instance->key = $data['key'] ?? null;
+        $instance->qrcodeData = $data['qrcode_data'] ?? null;
+        $instance->amount = isset($data['amount']) ? (int)$data['amount'] : null;
         $instance->expirationDate = $data['expiration_date'] ?? null;
-        $instance->status         = isset($data['status']) ? (int)$data['status'] : null;
-        $instance->createdAt      = $data['created_at'] ?? null;
-        $instance->updatedAt      = $data['updated_at'] ?? null;
+        $instance->status = isset($data['status']) ? (int)$data['status'] : null;
+        $instance->createdAt = $data['created_at'] ?? null;
+        $instance->updatedAt = $data['updated_at'] ?? null;
 
         return $instance;
     }
@@ -71,18 +71,18 @@ class Pix implements ResponsePayload
     public function toArray(): array
     {
         return [
-            'id'              => $this->id,
-            'uuid'            => $this->uuid,
-            'business_id'     => $this->businessId,
-            'payment_id'      => $this->paymentId,
-            'txid'            => $this->txid,
-            'key'             => $this->key,
-            'qrcode_data'     => $this->qrcodeData,
-            'amount'          => $this->amount,
+            'id' => $this->id,
+            'uuid' => $this->uuid,
+            'business_id' => $this->businessId,
+            'payment_id' => $this->paymentId,
+            'txid' => $this->txid,
+            'key' => $this->key,
+            'qrcode_data' => $this->qrcodeData,
+            'amount' => $this->amount,
             'expiration_date' => $this->expirationDate,
-            'status'          => $this->status,
-            'created_at'      => $this->createdAt,
-            'updated_at'      => $this->updatedAt,
+            'status' => $this->status,
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
         ];
     }
 }

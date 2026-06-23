@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\PaymentLinks;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class CreatePaymentLinkRequest implements RequestPayload
 {
@@ -87,16 +87,16 @@ class CreatePaymentLinkRequest implements RequestPayload
         $request = new self();
 
         // Garante que se vier nulo ou não definido, o tipo array seja respeitado
-        $request->acceptedMethods    = isset($data['accepted_methods']) &&
+        $request->acceptedMethods = isset($data['accepted_methods']) &&
             is_array($data['accepted_methods'])
             ? $data['accepted_methods']
             : [];
-        
-        $request->name               = $data['name'] ?? '';
-        $request->description        = $data['description'] ?? '';
-        $request->value              = isset($data['value']) ? (int) $data['value'] : 0;
-        $request->validity           = $data['validity'] ?? '';
-        $request->validityBoleto     = isset($data['validity_boleto'])
+
+        $request->name = $data['name'] ?? '';
+        $request->description = $data['description'] ?? '';
+        $request->value = isset($data['value']) ? (int) $data['value'] : 0;
+        $request->validity = $data['validity'] ?? '';
+        $request->validityBoleto = isset($data['validity_boleto'])
             ? (int) $data['validity_boleto']
             : 0;
         $request->numberInstallments = isset($data['number_installments'])
@@ -105,21 +105,21 @@ class CreatePaymentLinkRequest implements RequestPayload
         $request->acceptAfterDueDate = isset($data['accept_after_due_date'])
             ? (int) $data['accept_after_due_date']
             : null;
-        
+
         // Mantém booleanos flexíveis aceitando true, false ou null
-        $request->isRecurrence       = isset($data['is_recurrence'])
+        $request->isRecurrence = isset($data['is_recurrence'])
             ? (bool) $data['is_recurrence']
             : null;
-        $request->frequency          = $data['frequency'] ?? null;
-        $request->recurrenceTime     = isset($data['recurrence_time'])
+        $request->frequency = $data['frequency'] ?? null;
+        $request->recurrenceTime = isset($data['recurrence_time'])
             ? (int) $data['recurrence_time']
             : null;
-        $request->payerId            = isset($data['payer_id'])
+        $request->payerId = isset($data['payer_id'])
             ? (int) $data['payer_id']
             : null;
-        $request->notificationUrl    = $data['notification_url'] ?? null;
-        $request->returnUrl          = $data['return_url'] ?? null;
-        $request->expireAfterUsage   = isset($data['expire_after_usage'])
+        $request->notificationUrl = $data['notification_url'] ?? null;
+        $request->returnUrl = $data['return_url'] ?? null;
+        $request->expireAfterUsage = isset($data['expire_after_usage'])
             ? (bool) $data['expire_after_usage']
             : null;
 

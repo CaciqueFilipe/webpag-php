@@ -62,24 +62,24 @@ class Payer implements ResponsePayload
     {
         $payer = new self();
 
-        $payer->id          = isset($data['id']) ? (int)$data['id'] : null;
-        $payer->cpfCnpj     = $data['cpf_cnpj'] ?? null;
-        $payer->isBusiness  = isset($data['is_business'])
+        $payer->id = isset($data['id']) ? (int)$data['id'] : null;
+        $payer->cpfCnpj = $data['cpf_cnpj'] ?? null;
+        $payer->isBusiness = isset($data['is_business'])
             ? (bool)$data['is_business']
             : null;
-        $payer->email       = $data['email'] ?? null;
-        $payer->firstName   = $data['first_name'] ?? null;
-        $payer->lastName    = $data['last_name'] ?? null;
-        $payer->gender      = $data['gender'] ?? null;
+        $payer->email = $data['email'] ?? null;
+        $payer->firstName = $data['first_name'] ?? null;
+        $payer->lastName = $data['last_name'] ?? null;
+        $payer->gender = $data['gender'] ?? null;
         $payer->phoneNumber = $data['phone_number'] ?? null;
-        $payer->birthDate   = $data['birth_date'] ?? null;
-        $payer->useBoleto   = isset($data['use_boleto'])
+        $payer->birthDate = $data['birth_date'] ?? null;
+        $payer->useBoleto = isset($data['use_boleto'])
             ? (bool)$data['use_boleto']
             : null;
-        $payer->status      = isset($data['status']) ? (int)$data['status'] : null;
+        $payer->status = isset($data['status']) ? (int)$data['status'] : null;
         $payer->statusLabel = $data['status_label'] ?? null;
-        $payer->createdAt   = $data['created_at'] ?? null;
-        $payer->updatedAt   = $data['updated_at'] ?? null;
+        $payer->createdAt = $data['created_at'] ?? null;
+        $payer->updatedAt = $data['updated_at'] ?? null;
 
         if (isset($data['address']) && is_array($data['address'])) {
             $payer->address = Address::fromArray($data['address']);
@@ -102,6 +102,7 @@ class Payer implements ResponsePayload
                 $payers[] = self::fromArray($payerData);
             }
         }
+
         return $payers;
     }
 
@@ -111,21 +112,21 @@ class Payer implements ResponsePayload
     public function toArray(): array
     {
         return [
-            'id'           => $this->id,
-            'cpf_cnpj'     => $this->cpfCnpj,
-            'is_business'  => $this->isBusiness,
-            'email'        => $this->email,
-            'first_name'   => $this->firstName,
-            'last_name'    => $this->lastName,
-            'gender'       => $this->gender,
+            'id' => $this->id,
+            'cpf_cnpj' => $this->cpfCnpj,
+            'is_business' => $this->isBusiness,
+            'email' => $this->email,
+            'first_name' => $this->firstName,
+            'last_name' => $this->lastName,
+            'gender' => $this->gender,
             'phone_number' => $this->phoneNumber,
-            'birth_date'   => $this->birthDate,
-            'address'      => $this->address ? $this->address->toArray() : null,
-            'use_boleto'   => $this->useBoleto,
-            'status'       => $this->status,
+            'birth_date' => $this->birthDate,
+            'address' => $this->address ? $this->address->toArray() : null,
+            'use_boleto' => $this->useBoleto,
+            'status' => $this->status,
             'status_label' => $this->statusLabel,
-            'created_at'   => $this->createdAt,
-            'updated_at'   => $this->updatedAt,
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
         ];
     }
 }

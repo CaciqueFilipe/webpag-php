@@ -32,7 +32,7 @@ class AuthenticateRequest implements RequestPayload
     public static function fromArray(array $data)
     {
         $request = new self();
-        $request->email    = $data['email'] ?? '';
+        $request->email = $data['email'] ?? '';
         $request->password = $data['password'] ?? '';
 
         return $request;

@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Payments;
 
-use WebPag\Support\ArrayHelper;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Support\ArrayHelper;
 
 class ListPaymentsRequest implements RequestPayload
 {
@@ -86,37 +86,37 @@ class ListPaymentsRequest implements RequestPayload
     {
         $request = new self();
 
-        $request->paymentId      = isset($data['payment_id'])
+        $request->paymentId = isset($data['payment_id'])
             ? (int) $data['payment_id']
             : null;
-        $request->payerId        = isset($data['payer_id'])
+        $request->payerId = isset($data['payer_id'])
             ? (int) $data['payer_id']
             : null;
-        $request->page           = isset($data['page'])
+        $request->page = isset($data['page'])
             ? (int) $data['page']
             : null;
         $request->perPage = isset($data['per_page'])
             ? (int) $data['per_page']
             : null;
         $request->createdAtStart = $data['created_at_start'] ?? null;
-        $request->createdAtEnd   = $data['created_at_end'] ?? null;
-        $request->paidAtStart    = $data['paid_at_start'] ?? null;
-        $request->paidAtEnd      = $data['paid_at_end'] ?? null;
-        $request->status         = isset($data['status'])
+        $request->createdAtEnd = $data['created_at_end'] ?? null;
+        $request->paidAtStart = $data['paid_at_start'] ?? null;
+        $request->paidAtEnd = $data['paid_at_end'] ?? null;
+        $request->status = isset($data['status'])
             ? (int) $data['status']
             : null;
-        $request->method         = $data['method'] ?? null;
-        $request->active         = isset($data['active'])
+        $request->method = $data['method'] ?? null;
+        $request->active = isset($data['active'])
             ? (bool) $data['active']
             : null;
         $request->recurrenceCode = isset($data['recurrence_code'])
             ? (int) $data['recurrence_code']
             : null;
-        $request->isRecurrent    = isset($data['is_recurrent'])
+        $request->isRecurrent = isset($data['is_recurrent'])
             ? (bool) $data['is_recurrent']
             : null;
-        $request->orderId        = $data['order_id'] ?? null;
-        $request->txid           = $data['txid'] ?? null;
+        $request->orderId = $data['order_id'] ?? null;
+        $request->txid = $data['txid'] ?? null;
 
         return $request;
     }

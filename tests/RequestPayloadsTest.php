@@ -4,26 +4,26 @@ namespace WebPag\Tests;
 
 use PHPUnit\Framework\TestCase;
 use WebPag\Enums\PaymentStatus;
-use WebPag\Requests\Payers\Address;
-use WebPag\Requests\Payments\PaymentSplit;
-use WebPag\Requests\Payments\CreditCardData;
-use WebPag\Requests\Payers\CreatePayerRequest;
-use WebPag\Requests\Payers\UpdatePayerRequest;
 use WebPag\Requests\Business\AuthenticateRequest;
-use WebPag\Requests\Payers\SaveCreditCardRequest;
-use WebPag\Requests\Payments\ListPaymentsRequest;
-use WebPag\Requests\Payments\RefundPaymentRequest;
-use WebPag\Requests\Payments\ProcessPaymentRequest;
-use WebPag\Requests\Transfers\ListTransfersRequest;
 use WebPag\Requests\Business\CreateFranchiseRequest;
-use WebPag\Requests\Transfers\CreateTransferRequest;
-use WebPag\Requests\Recurrency\ListRecurrencyRequest;
-use WebPag\Requests\Recurrency\CreateRecurrencyRequest;
-use WebPag\Requests\Recurrency\UpdateRecurrencyRequest;
-use WebPag\Requests\Installments\ListInstallmentsRequest;
 use WebPag\Requests\Installments\CreateInstallmentRequest;
+use WebPag\Requests\Installments\ListInstallmentsRequest;
+use WebPag\Requests\Payers\Address;
+use WebPag\Requests\Payers\CreatePayerRequest;
+use WebPag\Requests\Payers\SaveCreditCardRequest;
+use WebPag\Requests\Payers\UpdatePayerRequest;
 use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
+use WebPag\Requests\Payments\CreditCardData;
+use WebPag\Requests\Payments\ListPaymentsRequest;
+use WebPag\Requests\Payments\PaymentSplit;
+use WebPag\Requests\Payments\ProcessPaymentRequest;
+use WebPag\Requests\Payments\RefundPaymentRequest;
+use WebPag\Requests\Recurrency\CreateRecurrencyRequest;
+use WebPag\Requests\Recurrency\ListRecurrencyRequest;
+use WebPag\Requests\Recurrency\UpdateRecurrencyRequest;
 use WebPag\Requests\Transfers\ChangeTransferStatusDevRequest;
+use WebPag\Requests\Transfers\CreateTransferRequest;
+use WebPag\Requests\Transfers\ListTransfersRequest;
 
 class RequestPayloadsTest extends TestCase
 {

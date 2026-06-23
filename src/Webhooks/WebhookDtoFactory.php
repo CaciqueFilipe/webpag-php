@@ -32,7 +32,7 @@ class WebhookDtoFactory
             case WebhookEvent::TYPE_UNKNOWN:
             default:
                 // Para tipos desconhecidos, retornamos um DTO genérico que apenas armazena o array.
-                return new class($payload) implements ResponsePayload {
+                return new class ($payload) implements ResponsePayload {
                     private $data;
                     public function __construct(array $data)
                     {

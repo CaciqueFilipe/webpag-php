@@ -2,9 +2,9 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Responses\Installments\InstallmentPlan;
-use WebPag\Requests\Installments\ListInstallmentsRequest;
 use WebPag\Requests\Installments\CreateInstallmentRequest;
+use WebPag\Requests\Installments\ListInstallmentsRequest;
+use WebPag\Responses\Installments\InstallmentPlan;
 
 class Installments extends AbstractResource
 {
