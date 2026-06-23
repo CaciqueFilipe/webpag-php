@@ -70,19 +70,8 @@ class Pix implements ResponsePayload
      */
     public function toArray(): array
     {
-        return [
-            'id' => $this->id,
-            'uuid' => $this->uuid,
-            'business_id' => $this->businessId,
-            'payment_id' => $this->paymentId,
-            'txid' => $this->txid,
-            'key' => $this->key,
-            'qrcode_data' => $this->qrcodeData,
-            'amount' => $this->amount,
-            'expiration_date' => $this->expirationDate,
-            'status' => $this->status,
-            'created_at' => $this->createdAt,
-            'updated_at' => $this->updatedAt,
-        ];
+        return array_filter(get_object_vars($this), function ($value) {
+            return $value !== null;
+        });
     }
 }

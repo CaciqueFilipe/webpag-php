@@ -104,7 +104,7 @@ class HttpClient
                             'attempt' => $attempt,
                             'next_delay_ms' => $delay * 1000,
                         ]);
-                        usleep($delay * 1000000);
+                        usleep((int) ($delay * 1000000));
 
                         continue;
                     }
@@ -135,7 +135,7 @@ class HttpClient
                         'attempt' => $attempt,
                         'next_delay_ms' => $delay * 1000,
                     ]);
-                    usleep($delay * 1000000);
+                    usleep((int) ($delay * 1000000));
                 }
             }
         }
