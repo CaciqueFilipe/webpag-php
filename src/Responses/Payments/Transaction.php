@@ -58,16 +58,8 @@ class Transaction implements ResponsePayload
      */
     public function toArray(): array
     {
-        return [
-            'id' => $this->id,
-            'type' => $this->type,
-            'type_label' => $this->typeLabel,
-            'transaction_id' => $this->transactionId,
-            'response_status' => $this->responseStatus,
-            'errors' => $this->errors,
-            'status' => $this->status,
-            'status_label' => $this->statusLabel,
-            'created_at' => $this->createdAt,
-        ];
+        return array_filter(get_object_vars($this), function ($value) {
+            return $value !== null;
+        });
     }
 }
