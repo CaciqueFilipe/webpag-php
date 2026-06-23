@@ -4,7 +4,6 @@ namespace WebPag\Http;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -15,7 +14,7 @@ class HttpClient
 {
     use LoggerAwareTrait;
 
-    const DEFAULT_MAX_RETRIES = 3;
+    public const DEFAULT_MAX_RETRIES = 3;
 
     /** @var Configuration */
     private $config;
@@ -53,13 +52,13 @@ class HttpClient
      *
      * @throws ApiException
      */
-    public function request($method, $uri, array $options = array())
+    public function request($method, $uri, array $options = [])
     {
         $options['headers'] = array_merge([
             'auth-token' => $this->config->getApiToken(),
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-        ], isset($options['headers']) ? $options['headers'] : array());
+        ], isset($options['headers']) ? $options['headers'] : []);
 
         $this->logger->info('WebPag API request', [
             'method' => $method,
@@ -106,6 +105,7 @@ class HttpClient
                             'next_delay_ms' => $delay * 1000,
                         ]);
                         usleep($delay * 1000000);
+
                         continue;
                     }
 
@@ -202,7 +202,7 @@ class HttpClient
      *
      * @return ApiResponse
      */
-    public function get($uri, array $query = array())
+    public function get($uri, array $query = [])
     {
         return $this->request('GET', $uri, ['query' => $query]);
     }
@@ -213,7 +213,7 @@ class HttpClient
      *
      * @return ApiResponse
      */
-    public function post($uri, array $body = array())
+    public function post($uri, array $body = [])
     {
         return $this->request('POST', $uri, ['json' => $body]);
     }
@@ -224,7 +224,7 @@ class HttpClient
      *
      * @return ApiResponse
      */
-    public function put($uri, array $body = array())
+    public function put($uri, array $body = [])
     {
         return $this->request('PUT', $uri, ['json' => $body]);
     }
@@ -235,9 +235,9 @@ class HttpClient
      *
      * @return ApiResponse
      */
-    public function delete($uri, array $query = array())
+    public function delete($uri, array $query = [])
     {
-        $options = array();
+        $options = [];
 
         if (count($query) > 0) {
             $options['query'] = $query;
@@ -260,7 +260,7 @@ class HttpClient
         }
 
         if (isset($response['errors']) && is_array($response['errors'])) {
-            $messages = array();
+            $messages = [];
 
             foreach ($response['errors'] as $field => $fieldErrors) {
                 if (is_array($fieldErrors)) {

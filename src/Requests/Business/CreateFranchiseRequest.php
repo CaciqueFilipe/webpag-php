@@ -6,41 +6,6 @@ use WebPag\Contracts\RequestPayload;
 use WebPag\Requests\Payers\Address;
 use WebPag\Support\ArrayHelper;
 
-class AuthenticateRequest implements RequestPayload
-{
-    /** @var string */
-    public $email;
-
-    /** @var string */
-    public $password;
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function toArray()
-    {
-        return [
-            'email' => $this->email,
-            'password' => $this->password,
-        ];
-    }
-
-    /**
-     * Cria uma instância a partir de um array associativo.
-     *
-     * @param array<string, mixed> $data
-     * @return self
-     */
-    public static function fromArray(array $data)
-    {
-        $request = new self();
-        $request->email    = $data['email'] ?? '';
-        $request->password = $data['password'] ?? '';
-
-        return $request;
-    }
-}
-
 class CreateFranchiseRequest implements RequestPayload
 {
     /** @var string */
@@ -130,28 +95,28 @@ class CreateFranchiseRequest implements RequestPayload
     public static function fromArray(array $data)
     {
         $request = new self();
-        
-        $request->razaoSocial            = $data['razao_social'] ?? '';
-        $request->cnpj                   = $data['cnpj'] ?? '';
-        $request->transferFrequency      = isset($data['transfer_frequency'])
+
+        $request->razaoSocial = $data['razao_social'] ?? '';
+        $request->cnpj = $data['cnpj'] ?? '';
+        $request->transferFrequency = isset($data['transfer_frequency'])
             ? (int) $data['transfer_frequency']
             : null;
         $request->creditInstallmentLimit = isset($data['credit_installment_limit'])
             ? (int) $data['credit_installment_limit']
             : null;
-        $request->notificationEmail      = $data['notification_email'] ?? null;
-        $request->gatewayName            = $data['gateway_name'] ?? null;
-        $request->accountBankCode        = $data['account_bank_code'] ?? null;
-        $request->accountType            = $data['account_type'] ?? null;
-        $request->accountHolder          = $data['account_holder'] ?? null;
-        $request->accountDocument        = $data['account_document'] ?? null;
-        $request->accountAgency          = $data['account_agency'] ?? null;
-        $request->accountNumber          = $data['account_number'] ?? null;
-        $request->pixKeyType             = isset($data['pix_key_type'])
+        $request->notificationEmail = $data['notification_email'] ?? null;
+        $request->gatewayName = $data['gateway_name'] ?? null;
+        $request->accountBankCode = $data['account_bank_code'] ?? null;
+        $request->accountType = $data['account_type'] ?? null;
+        $request->accountHolder = $data['account_holder'] ?? null;
+        $request->accountDocument = $data['account_document'] ?? null;
+        $request->accountAgency = $data['account_agency'] ?? null;
+        $request->accountNumber = $data['account_number'] ?? null;
+        $request->pixKeyType = isset($data['pix_key_type'])
             ? (int) $data['pix_key_type']
             : null;
-        $request->pixKey                 = $data['pix_key'] ?? null;
-        $request->phoneNumber            = $data['phone_number'] ?? null;
+        $request->pixKey = $data['pix_key'] ?? null;
+        $request->phoneNumber = $data['phone_number'] ?? null;
 
         // Trata o objeto aninhado de Endereço se ele vier como array
         if (isset($data['address']) && is_array($data['address'])) {

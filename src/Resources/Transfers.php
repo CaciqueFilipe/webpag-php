@@ -2,10 +2,10 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Http\ApiResponse;
 use WebPag\Requests\Transfers\ChangeTransferStatusDevRequest;
 use WebPag\Requests\Transfers\CreateTransferRequest;
 use WebPag\Requests\Transfers\ListTransfersRequest;
+use WebPag\Responses\Transfers\Transfer;
 
 class Transfers extends AbstractResource
 {
@@ -14,11 +14,13 @@ class Transfers extends AbstractResource
      *
      * @param ListTransfersRequest|array<string, mixed>|null $filters
      *
-     * @return ApiResponse
+     * @return Transfer[]
      */
-    public function list($filters = null)
+    public function list($filters = null): array
     {
-        return $this->http->get('api/transfers', $this->resolvePayload($filters));
+        $response = $this->http->get('api/transfers', $this->resolvePayload($filters));
+
+        return Transfer::fromArrayCollection($response->getData());
     }
 
     /**
@@ -26,11 +28,13 @@ class Transfers extends AbstractResource
      *
      * @param CreateTransferRequest|array<string, mixed> $request
      *
-     * @return ApiResponse
+     * @return Transfer
      */
-    public function create($request)
+    public function create($request): Transfer
     {
-        return $this->http->post('api/transfers', $this->resolvePayload($request));
+        $response = $this->http->post('api/transfers', $this->resolvePayload($request));
+
+        return Transfer::fromArray($response->getData());
     }
 
     /**
@@ -38,11 +42,13 @@ class Transfers extends AbstractResource
      *
      * @param int|string $transferId
      *
-     * @return ApiResponse
+     * @return Transfer
      */
-    public function find($transferId)
+    public function find($transferId): Transfer
     {
-        return $this->http->get('api/transfers/' . $transferId);
+        $response = $this->http->get('api/transfers/' . $transferId);
+
+        return Transfer::fromArray($response->getData());
     }
 
     /**
@@ -50,27 +56,36 @@ class Transfers extends AbstractResource
      *
      * @param int|string $transferId
      *
-     * @return ApiResponse
+     * @return Transfer
      */
-    public function cancel($transferId)
+    public function cancel($transferId): Transfer
     {
-        return $this->http->delete('api/transfers/' . $transferId);
+        $response = $this->http->delete('api/transfers/' . $transferId);
+        $data = $response->getData();
+
+        // O endpoint de cancelamento retorna { "message": "...", "transfer": { ... } }
+        // Extraímos o objeto "transfer" para criar o DTO.
+        $transferData = $data['transfer'] ?? $data;
+
+        return Transfer::fromArray($transferData);
     }
 
     /**
      * Alterar status da transferência (apenas Sandbox/Desenvolvimento).
      *
-     * @param int|string                                           $transferId
+     * @param int|string $transferId
      * @param ChangeTransferStatusDevRequest|array<string, mixed>  $request
      *
-     * @return ApiResponse
+     * @return Transfer
      */
-    public function changeStatusDev($transferId, $request)
+    public function changeStatusDev($transferId, $request): Transfer
     {
-        return $this->http->post(
+        $response = $this->http->post(
             'api/transfers/' . $transferId . '/change-status-dev',
             $this->resolvePayload($request)
         );
+
+        return Transfer::fromArray($response->getData());
     }
 
 }

@@ -9,7 +9,6 @@ use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 use WebPag\Configuration;
 use WebPag\Exceptions\ApiException;
 use WebPag\Http\ApiResponse;
@@ -131,7 +130,7 @@ class HttpClientTest extends TestCase
         } catch (ApiException $e) {
             // Verifica se a mensagem contém o texto esperado
             $this->assertStringContainsString('Payment not found', $e->getMessage());
-            
+
             // Se o seu HttpClient preenche o status code, descomente a linha abaixo para testar:
             // $this->assertEquals(404, $e->getStatusCode());
         }
@@ -152,7 +151,7 @@ class HttpClientTest extends TestCase
 
         $client->get('api/payments');
 
-        
+
     }
 
     public function testRequestThrowsApiExceptionOnGuzzleError()

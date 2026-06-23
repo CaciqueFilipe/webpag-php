@@ -28,7 +28,7 @@ abstract class AbstractResource
     protected function resolvePayload($payload)
     {
         if ($payload === null) {
-            return array();
+            return [];
         }
 
         if ($payload instanceof RequestPayload) {

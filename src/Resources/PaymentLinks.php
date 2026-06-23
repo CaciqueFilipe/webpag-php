@@ -2,19 +2,21 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Http\ApiResponse;
 use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
+use WebPag\Responses\PaymentLinks\PaymentLink;
 
 class PaymentLinks extends AbstractResource
 {
     /**
      * Listar os links de pagamento.
      *
-     * @return ApiResponse
+     * @return PaymentLink[]
      */
-    public function list()
+    public function list(): array
     {
-        return $this->http->get('api/payment-links');
+        $response = $this->http->get('api/payment-links');
+
+        return PaymentLink::fromArrayCollection($response->getData());
     }
 
     /**
@@ -22,11 +24,16 @@ class PaymentLinks extends AbstractResource
      *
      * @param CreatePaymentLinkRequest|array<string, mixed> $request
      *
-     * @return ApiResponse
+     * @return PaymentLink
      */
-    public function create($request)
+    public function create($request): PaymentLink
     {
-        return $this->http->post('api/payment-links/register', $this->resolvePayload($request));
+        $response = $this->http->post(
+            'api/payment-links/register',
+            $this->resolvePayload($request)
+        );
+
+        return PaymentLink::fromArray($response->getData());
     }
 
 }

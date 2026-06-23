@@ -3,7 +3,6 @@
 namespace WebPag\Laravel;
 
 use Illuminate\Support\ServiceProvider;
-use WebPag\Configuration;
 use WebPag\Environment;
 use WebPag\WebPag;
 

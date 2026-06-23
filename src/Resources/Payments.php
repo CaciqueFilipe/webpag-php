@@ -2,10 +2,11 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Http\ApiResponse;
 use WebPag\Requests\Payments\ListPaymentsRequest;
 use WebPag\Requests\Payments\ProcessPaymentRequest;
 use WebPag\Requests\Payments\RefundPaymentRequest;
+use WebPag\Responses\Payments\Payment;
+use WebPag\Responses\Payments\Refund;
 
 class Payments extends AbstractResource
 {
@@ -14,11 +15,16 @@ class Payments extends AbstractResource
      *
      * @param ListPaymentsRequest|array<string, mixed>|null $filters
      *
-     * @return ApiResponse
+     * @return Payment[]
      */
-    public function list($filters = null)
+    public function list($filters = null): array
     {
-        return $this->http->get('api/payments', $this->resolvePayload($filters));
+        $response = $this->http->get(
+            'api/payments',
+            $this->resolvePayload($filters)
+        );
+
+        return Payment::fromArrayCollection($response->getData());
     }
 
     /**
@@ -26,11 +32,16 @@ class Payments extends AbstractResource
      *
      * @param ProcessPaymentRequest|array<string, mixed> $request
      *
-     * @return ApiResponse
+     * @return Payment
      */
-    public function process($request)
+    public function process($request): Payment
     {
-        return $this->http->post('api/payments/process', $this->resolvePayload($request));
+        $response = $this->http->post(
+            'api/payments/process',
+            $this->resolvePayload($request)
+        );
+
+        return Payment::fromArray($response->getData());
     }
 
     /**
@@ -38,11 +49,13 @@ class Payments extends AbstractResource
      *
      * @param int|string $paymentId
      *
-     * @return ApiResponse
+     * @return Payment
      */
-    public function find($paymentId)
+    public function find($paymentId): Payment
     {
-        return $this->http->get('api/payments/' . $paymentId);
+        $response = $this->http->get('api/payments/' . $paymentId);
+
+        return Payment::fromArray($response->getData());
     }
 
     /**
@@ -50,27 +63,31 @@ class Payments extends AbstractResource
      *
      * @param int|string $paymentId
      *
-     * @return ApiResponse
+     * @return Payment
      */
-    public function cancel($paymentId)
+    public function cancel($paymentId): Payment
     {
-        return $this->http->delete('api/payments/' . $paymentId);
+        $response = $this->http->delete('api/payments/' . $paymentId);
+
+        return Payment::fromArray($response->getData());
     }
 
     /**
      * Estornar um pagamento.
      *
-     * @param int|string                                     $paymentId
+     * @param int|string $paymentId
      * @param RefundPaymentRequest|array<string, mixed>|null $request
      *
-     * @return ApiResponse
+     * @return Refund
      */
-    public function refund($paymentId, $request = null)
+    public function refund($paymentId, $request = null): Refund
     {
-        return $this->http->put(
+        $response = $this->http->put(
             'api/payments/' . $paymentId . '/refund',
-            $this->resolvePayload($request !== null ? $request : array())
+            $this->resolvePayload($request !== null ? $request : [])
         );
+
+        return Refund::fromArray($response->getData());
     }
 
     /**
@@ -78,11 +95,13 @@ class Payments extends AbstractResource
      *
      * @param string $refundId
      *
-     * @return ApiResponse
+     * @return Refund
      */
-    public function findRefund($refundId)
+    public function findRefund($refundId): Refund
     {
-        return $this->http->get('api/payments/refunds/' . $refundId);
+        $response = $this->http->get('api/payments/refunds/' . $refundId);
+
+        return Refund::fromArray($response->getData());
     }
 
     /**
@@ -90,11 +109,15 @@ class Payments extends AbstractResource
      *
      * @param int|string $paymentId
      *
-     * @return ApiResponse
+     * @return Payment
      */
-    public function markAsPaidDev($paymentId)
+    public function markAsPaidDev($paymentId): Payment
     {
-        return $this->http->post('api/payments/' . $paymentId . '/mark-as-paid-dev');
+        $response = $this->http->post(
+            'api/payments/' . $paymentId . '/mark-as-paid-dev'
+        );
+
+        return Payment::fromArray($response->getData());
     }
 
 }

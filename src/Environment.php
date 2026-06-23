@@ -4,9 +4,9 @@ namespace WebPag;
 
 class Environment
 {
-    const ENV_API_TOKEN = 'WEBPAG_API_TOKEN';
-    const ENV_BASE_URL = 'WEBPAG_BASE_URL';
-    const ENV_TIMEOUT = 'WEBPAG_TIMEOUT';
+    public const ENV_API_TOKEN = 'WEBPAG_API_TOKEN';
+    public const ENV_BASE_URL = 'WEBPAG_BASE_URL';
+    public const ENV_TIMEOUT = 'WEBPAG_TIMEOUT';
 
     /** @var string */
     private $apiToken = '';

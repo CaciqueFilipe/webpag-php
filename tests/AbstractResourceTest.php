@@ -14,14 +14,14 @@ class AbstractResourceTest extends TestCase
         $http = $this->createMock(HttpClient::class);
 
         /** @var mixed $resource */
-        $resource = new class($http) extends AbstractResource {
+        $resource = new class ($http) extends AbstractResource {
             public function resolve($payload)
             {
                 return $this->resolvePayload($payload);
             }
         };
 
-        $dto = new class implements RequestPayload {
+        $dto = new class () implements RequestPayload {
             public function toArray(): array
             {
                 return ['key' => 'value', 'num' => 42];
@@ -43,7 +43,7 @@ class AbstractResourceTest extends TestCase
         $http = $this->createMock(HttpClient::class);
 
         /** @var mixed $resource */
-        $resource = new class($http) extends AbstractResource {
+        $resource = new class ($http) extends AbstractResource {
             public function resolve($payload)
             {
                 return $this->resolvePayload($payload);
@@ -60,7 +60,7 @@ class AbstractResourceTest extends TestCase
         $http = $this->createMock(HttpClient::class);
 
         /** @var mixed $resource */
-        $resource = new class($http) extends AbstractResource {
+        $resource = new class ($http) extends AbstractResource {
             public function resolve($payload)
             {
                 return $this->resolvePayload($payload);

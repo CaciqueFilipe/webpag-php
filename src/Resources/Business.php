@@ -2,9 +2,12 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Http\ApiResponse;
 use WebPag\Requests\Business\AuthenticateRequest;
 use WebPag\Requests\Business\CreateFranchiseRequest;
+use WebPag\Responses\Business\Authentication;
+use WebPag\Responses\Business\Business as BusinessResponse;
+use WebPag\Responses\Business\Franchise;
+use WebPag\Responses\Card\CardToken;
 
 class Business extends AbstractResource
 {
@@ -13,31 +16,40 @@ class Business extends AbstractResource
      *
      * @param AuthenticateRequest|array<string, mixed> $request
      *
-     * @return ApiResponse
+     * @return Authentication
      */
-    public function authenticate($request)
+    public function authenticate($request): Authentication
     {
-        return $this->http->post('api/authenticate', $this->resolvePayload($request));
+        $response = $this->http->post(
+            'api/authenticate',
+            $this->resolvePayload($request)
+        );
+
+        return Authentication::fromArray($response->getData());
     }
 
     /**
      * Dados da empresa logada.
      *
-     * @return ApiResponse
+     * @return BusinessResponse
      */
-    public function me()
+    public function me(): BusinessResponse
     {
-        return $this->http->get('api/me');
+        $response = $this->http->get('api/me');
+
+        return BusinessResponse::fromArray($response->getData());
     }
 
     /**
      * Chave pública para tokenização do cartão.
      *
-     * @return ApiResponse
+     * @return CardToken
      */
-    public function cardTokenPublicKey()
+    public function cardTokenPublicKey(): CardToken
     {
-        return $this->http->get('api/card-token/public-key');
+        $response = $this->http->get('api/card-token/public-key');
+
+        return CardToken::fromArray($response->getData());
     }
 
     /**
@@ -45,11 +57,16 @@ class Business extends AbstractResource
      *
      * @param CreateFranchiseRequest|array<string, mixed> $request
      *
-     * @return ApiResponse
+     * @return Franchise
      */
-    public function createFranchise($request)
+    public function createFranchise($request): Franchise
     {
-        return $this->http->post('api/franchises', $this->resolvePayload($request));
+        $response = $this->http->post(
+            'api/franchises',
+            $this->resolvePayload($request)
+        );
+
+        return Franchise::fromArray($response->getData());
     }
 
 }

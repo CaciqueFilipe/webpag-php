@@ -2,9 +2,9 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Http\ApiResponse;
 use WebPag\Requests\Installments\CreateInstallmentRequest;
 use WebPag\Requests\Installments\ListInstallmentsRequest;
+use WebPag\Responses\Installments\InstallmentPlan;
 
 class Installments extends AbstractResource
 {
@@ -13,11 +13,16 @@ class Installments extends AbstractResource
      *
      * @param ListInstallmentsRequest|array<string, mixed>|null $filters
      *
-     * @return ApiResponse
+     * @return InstallmentPlan[]
      */
-    public function list($filters = null)
+    public function list($filters = null): array
     {
-        return $this->http->get('api/installments', $this->resolvePayload($filters));
+        $response = $this->http->get(
+            'api/installments',
+            $this->resolvePayload($filters)
+        );
+
+        return InstallmentPlan::fromArrayCollection($response->getData());
     }
 
     /**
@@ -25,11 +30,16 @@ class Installments extends AbstractResource
      *
      * @param CreateInstallmentRequest|array<string, mixed> $request
      *
-     * @return ApiResponse
+     * @return InstallmentPlan
      */
-    public function create($request)
+    public function create($request): InstallmentPlan
     {
-        return $this->http->post('api/installments/register', $this->resolvePayload($request));
+        $response = $this->http->post(
+            'api/installments/register',
+            $this->resolvePayload($request)
+        );
+
+        return InstallmentPlan::fromArray($response->getData());
     }
 
     /**
@@ -37,11 +47,13 @@ class Installments extends AbstractResource
      *
      * @param int|string $installmentPlanId
      *
-     * @return ApiResponse
+     * @return InstallmentPlan
      */
-    public function find($installmentPlanId)
+    public function find($installmentPlanId): InstallmentPlan
     {
-        return $this->http->get('api/installments/' . $installmentPlanId);
+        $response = $this->http->get('api/installments/' . $installmentPlanId);
+
+        return InstallmentPlan::fromArray($response->getData());
     }
 
     /**
@@ -49,11 +61,13 @@ class Installments extends AbstractResource
      *
      * @param int|string $installmentPlanId
      *
-     * @return ApiResponse
+     * @return InstallmentPlan
      */
-    public function cancel($installmentPlanId)
+    public function cancel($installmentPlanId): InstallmentPlan
     {
-        return $this->http->post('api/installments/' . $installmentPlanId . '/cancel');
+        $response = $this->http->post('api/installments/' . $installmentPlanId . '/cancel');
+
+        return InstallmentPlan::fromArray($response->getData());
     }
 
 }
