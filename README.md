@@ -189,6 +189,34 @@ Enums disponíveis em `WebPag\Enums\`:
 - `PaymentStatus` — status numéricos de pagamento (10 a 90)
 - `TransferDestinationType`, `TransferType`, `PixKeyType`, etc.
 
+## DTOs de Resposta
+
+Assim como as requisições, as respostas dos endpoints também são encapsuladas em DTOs tipados, localizados em `WebPag\Responses\*`. Todas implementam `ResponsePayload` e são criadas a partir do método estático `fromArray()`.
+
+As propriedades são públicas para fácil acesso aos dados:
+
+```php
+$payment = $webpag->payments->find(123);
+
+echo $payment->id;
+echo $payment->statusLabel;
+echo $payment->amount; // em centavos
+```
+
+Alguns dos principais DTOs de resposta são:
+
+- `WebPag\Responses\Business\Business`
+- `WebPag\Responses\Business\CardTokenPublicKey`
+- `WebPag\Responses\Installments\Installment`
+- `WebPag\Responses\PaymentLinks\PaymentLink`
+- `WebPag\Responses\Payers\Payer`
+- `WebPag\Responses\Payers\SavedCreditCard`
+- `WebPag\Responses\Payments\Payment`
+- `WebPag\Responses\Payments\Refund`
+- `WebPag\Responses\Recurrency\Recurrency`
+- `WebPag\Responses\Transfers\Transfer`
+- e outros...
+
 ## Webhooks
 
 Para processar notificações recebidas da WebPag, é crucial primeiro **validar a assinatura** para garantir a autenticidade da requisição.
@@ -232,12 +260,12 @@ try {
 
 ## Resposta da API
 
-Os métodos dos recursos (ex: `$webpag->payments->find(123)`) retornam **DTOs de resposta** (como `WebPag\Responses\Payments\Payment`), que encapsulam os dados da API de forma tipada.
+Os métodos dos recursos (ex: `$webpag->payments->find(123)`) retornam **DTOs de resposta** (como `WebPag\Responses\Payments\Payment`), que encapsulam os dados da API de forma tipada. Veja a seção "DTOs de Resposta" para uma lista.
 
 Para casos onde você precise de acesso ao objeto de resposta HTTP completo (status, headers), você pode interagir diretamente com o `HttpClient`. A maioria dos usuários, no entanto, irá preferir a simplicidade dos DTOs.
 
 O `HttpClient` interno retorna um objeto `WebPag\Http\ApiResponse` que oferece métodos como `getStatusCode()`, `getData()`, `toArray()`, e acesso `ArrayAccess` ao corpo da resposta.
-```
+
 
 ## Licença
 
