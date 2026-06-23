@@ -3,13 +3,13 @@
 namespace WebPag\Http;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
-use Psr\Log\LoggerAwareTrait;
-use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use WebPag\Configuration;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareTrait;
 use WebPag\Exceptions\ApiException;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 
 class HttpClient
 {

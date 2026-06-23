@@ -4,101 +4,6 @@ namespace WebPag\Webhooks;
 
 use WebPag\Exceptions\WebPagException;
 
-class WebhookEvent
-{
-    const TYPE_PAYMENT = 'payment';
-    const TYPE_TRANSFER = 'transfer';
-    const TYPE_REFUND = 'refund';
-    const TYPE_UNKNOWN = 'unknown';
-
-    /** @var string */
-    private $type;
-
-    /** @var array<string, mixed> */
-    private $payload;
-
-    /**
-     * @param string               $type
-     * @param array<string, mixed> $payload
-     */
-    public function __construct($type, array $payload)
-    {
-        $this->type = $type;
-        $this->payload = $payload;
-    }
-
-    /**
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function getPayload()
-    {
-        return $this->payload;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isPayment()
-    {
-        return $this->type === self::TYPE_PAYMENT;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isTransfer()
-    {
-        return $this->type === self::TYPE_TRANSFER;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isRefund()
-    {
-        return $this->type === self::TYPE_REFUND;
-    }
-
-    /**
-     * @param string $key
-     * @param mixed  $default
-     *
-     * @return mixed
-     */
-    public function get($key, $default = null)
-    {
-        return array_key_exists($key, $this->payload) ? $this->payload[$key] : $default;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getStatus()
-    {
-        return isset($this->payload['status']) ? (int) $this->payload['status'] : null;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getBusinessId()
-    {
-        if (isset($this->payload['business']['id'])) {
-            return (int) $this->payload['business']['id'];
-        }
-
-        return null;
-    }
-}
-
 class WebhookParser
 {
     /**
@@ -126,7 +31,10 @@ class WebhookParser
             throw new WebPagException('Payload de webhook inválido.');
         }
 
-        return new WebhookEvent($this->detectType($payload), $payload);
+        $type = $this->detectType($payload);
+        $dto = WebhookDtoFactory::create($type, $payload);
+
+        return new WebhookEvent($type, $dto);
     }
 
     /**
@@ -155,15 +63,25 @@ class WebhookParser
      */
     private function detectType(array $payload)
     {
+        // A detecção de 'recurrency' deve vir antes de 'payment'
+        if (isset($payload['is_recurrent']) && $payload['is_recurrent'] === true) {
+            return WebhookEvent::TYPE_RECURRENCY;
+        }
+
         if (isset($payload['destination_type']) || isset($payload['destination_type_name'])) {
             return WebhookEvent::TYPE_TRANSFER;
         }
 
-        if (isset($payload['refund_id']) || (isset($payload['type']) && $payload['type'] === 'refund')) {
+        // O payload de estorno pode vir de formas diferentes.
+        if ((isset($payload['refund_amount']) && isset($payload['payment_id'])) ||
+            isset($payload['refund_id']) ||
+            (isset($payload['type']) && $payload['type'] === 'refund')) {
             return WebhookEvent::TYPE_REFUND;
         }
 
-        if (isset($payload['payer_id']) || isset($payload['method']) || isset($payload['method_label'])) {
+        // Um pagamento geralmente terá 'method' ou 'payer_id'.
+        // Esta verificação deve ser uma das últimas para não confundir com outros tipos.
+        if (isset($payload['method']) || isset($payload['method_label']) || isset($payload['payer_id'])) {
             return WebhookEvent::TYPE_PAYMENT;
         }
 

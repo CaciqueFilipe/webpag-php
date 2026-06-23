@@ -2,10 +2,10 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Http\ApiResponse;
 use WebPag\Requests\Recurrency\CreateRecurrencyRequest;
 use WebPag\Requests\Recurrency\ListRecurrencyRequest;
 use WebPag\Requests\Recurrency\UpdateRecurrencyRequest;
+use WebPag\Responses\Recurrency\Recurrency as RecurrencyResponse;
 
 class Recurrency extends AbstractResource
 {
@@ -14,11 +14,16 @@ class Recurrency extends AbstractResource
      *
      * @param CreateRecurrencyRequest|array<string, mixed> $request
      *
-     * @return ApiResponse
+     * @return RecurrencyResponse
      */
-    public function create($request)
+    public function create($request): RecurrencyResponse
     {
-        return $this->http->post('api/payments/recurrency/register', $this->resolvePayload($request));
+        $response = $this->http->post(
+            'api/payments/recurrency/register',
+            $this->resolvePayload($request)
+        );
+
+        return RecurrencyResponse::fromArray($response->getData());
     }
 
     /**
@@ -26,11 +31,16 @@ class Recurrency extends AbstractResource
      *
      * @param ListRecurrencyRequest|array<string, mixed>|null $filters
      *
-     * @return ApiResponse
+     * @return RecurrencyResponse[]
      */
-    public function list($filters = null)
+    public function list($filters = null): array
     {
-        return $this->http->get('api/payments/recurrency/list', $this->resolvePayload($filters));
+        $response = $this->http->get(
+            'api/payments/recurrency/list',
+            $this->resolvePayload($filters)
+        );
+
+        return RecurrencyResponse::fromArrayCollection($response->getData());
     }
 
     /**
@@ -39,14 +49,16 @@ class Recurrency extends AbstractResource
      * @param string                                           $recurrenceCode
      * @param UpdateRecurrencyRequest|array<string, mixed>     $request
      *
-     * @return ApiResponse
+     * @return RecurrencyResponse
      */
-    public function update($recurrenceCode, $request)
+    public function update($recurrenceCode, $request): RecurrencyResponse
     {
-        return $this->http->put(
+        $response = $this->http->put(
             'api/payments/recurrency/' . $recurrenceCode . '/update',
             $this->resolvePayload($request)
         );
+
+        return RecurrencyResponse::fromArray($response->getData());
     }
 
     /**
@@ -54,11 +66,15 @@ class Recurrency extends AbstractResource
      *
      * @param string $recurrenceCode
      *
-     * @return ApiResponse
+     * @return RecurrencyResponse
      */
-    public function cancel($recurrenceCode)
+    public function cancel($recurrenceCode): RecurrencyResponse
     {
-        return $this->http->put('api/payments/recurrency/' . $recurrenceCode . '/cancel');
+        $response = $this->http->put(
+            'api/payments/recurrency/' . $recurrenceCode . '/cancel'
+        );
+
+        return RecurrencyResponse::fromArray($response->getData());
     }
 
 }

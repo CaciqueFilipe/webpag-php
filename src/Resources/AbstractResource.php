@@ -2,8 +2,8 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Contracts\RequestPayload;
 use WebPag\Http\HttpClient;
+use WebPag\Contracts\RequestPayload;
 
 abstract class AbstractResource
 {

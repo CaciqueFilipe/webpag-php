@@ -2,9 +2,9 @@
 
 namespace WebPag\Tests;
 
+use WebPag\Http\HttpClient;
 use PHPUnit\Framework\TestCase;
 use WebPag\Contracts\RequestPayload;
-use WebPag\Http\HttpClient;
 use WebPag\Resources\AbstractResource;
 
 class AbstractResourceTest extends TestCase

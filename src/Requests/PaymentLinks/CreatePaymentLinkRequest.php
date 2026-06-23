@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\PaymentLinks;
 
-use WebPag\Contracts\RequestPayload;
 use WebPag\Support\ArrayHelper;
+use WebPag\Contracts\RequestPayload;
 
 class CreatePaymentLinkRequest implements RequestPayload
 {

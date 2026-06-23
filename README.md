@@ -1,6 +1,6 @@
 # WebPag PHP SDK
 
-SDK PHP para integração com a [API WebPag](https://api.webpag.com.br/docs). Compatível com **PHP puro (7.2+)** e **Laravel (5.8+)** — o Laravel é opcional.
+SDK PHP para integração com a [API WebPag](https://api.webpag.com.br/docs). Compatível com **PHP puro (7.4+)** e **Laravel (5.8+)** — o Laravel é opcional.
 
 ## Instalação
 
@@ -87,7 +87,10 @@ WEBPAG_BASE_URL=https://api.webpag.com.br
 use WebPag\Laravel\Facades\WebPag;
 
 Route::get('/pagadores', function () {
-    return WebPag::payers->list()->getData();
+    // O método list() retorna um array de DTOs `Payer`.
+    // O Laravel se encarrega de serializar para JSON.
+    $payers = WebPag::payers->list();
+    return response()->json($payers);
 });
 ```
 
@@ -129,14 +132,18 @@ use WebPag\Enums\PaymentMethod;
 
 $webpag = WebPag::env();
 
-$response = $webpag->payments->process([
+// O retorno já é um DTO de resposta, pronto para uso.
+$payment = $webpag->payments->process([
     'payer_id' => 15,
     'name' => 'Pedido #1234',
     'amount' => 1500, // R$ 15,00 em centavos
     'method' => PaymentMethod::PIX,
 ]);
 
-$payment = $response->getData();
+// $payment é um objeto WebPag\Responses\Payments\Payment
+echo "Pagamento criado com ID: " . $payment->id . PHP_EOL;
+echo "Status: " . $payment->statusLabel . PHP_EOL;
+echo "PIX Copia e Cola: " . $payment->pix['qr_code_text'] . PHP_EOL;
 ```
 
 ### Usando DTOs tipados
@@ -184,10 +191,21 @@ Enums disponíveis em `WebPag\Enums\`:
 
 ## Webhooks
 
-Para processar notificações recebidas da WebPag:
+Para processar notificações recebidas da WebPag, é crucial primeiro **validar a assinatura** para garantir a autenticidade da requisição.
 
 ```php
-$event = $webpag->webhooks->parse($request->getContent());
+// 1. Obtenha os dados brutos e a assinatura do header
+$rawPayload = $request->getContent();
+$signature = $request->header('X-Webpag-Signature');
+$apiToken = config('webpag.api_token'); // ou getenv('WEBPAG_API_TOKEN')
+
+// 2. Valide a assinatura
+if (!\WebPag\Webhooks\WebhookParser::verifySignature($rawPayload, $signature, $apiToken)) {
+    abort(403, 'Invalid signature.');
+}
+
+// 3. Interprete o evento
+$event = $webpag->webhooks->parse($rawPayload);
 
 if ($event->isPayment() && $event->getStatus() === 40) {
     // Pagamento confirmado
@@ -214,15 +232,11 @@ try {
 
 ## Resposta da API
 
-Todas as chamadas retornam `WebPag\Http\ApiResponse`:
+Os métodos dos recursos (ex: `$webpag->payments->find(123)`) retornam **DTOs de resposta** (como `WebPag\Responses\Payments\Payment`), que encapsulam os dados da API de forma tipada.
 
-```php
-$response = $webpag->payments->find(123);
+Para casos onde você precise de acesso ao objeto de resposta HTTP completo (status, headers), você pode interagir diretamente com o `HttpClient`. A maioria dos usuários, no entanto, irá preferir a simplicidade dos DTOs.
 
-$response->getStatusCode(); // HTTP status
-$response->getData();      // Conteúdo de "data" ou corpo completo
-$response->toArray();      // Corpo JSON decodificado
-$response['message'];      // ArrayAccess
+O `HttpClient` interno retorna um objeto `WebPag\Http\ApiResponse` que oferece métodos como `getStatusCode()`, `getData()`, `toArray()`, e acesso `ArrayAccess` ao corpo da resposta.
 ```
 
 ## Licença

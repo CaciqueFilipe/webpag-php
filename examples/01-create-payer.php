@@ -2,15 +2,15 @@
 /**
  * Exemplo: Criar pagador usando DTO tipado
  *
- * Uso: WEBPAG_API_TOKEN=seu-token php examples/02-create-payer.php
+ * Uso: WEBPAG_API_TOKEN=seu-token php examples/01-create-payer.php
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use WebPag\WebPag;
-use WebPag\Requests\Payers\CreatePayerRequest;
-use WebPag\Requests\Payers\Address;
 use WebPag\Enums\Gender;
+use WebPag\Requests\Payers\Address;
+use WebPag\Requests\Payers\CreatePayerRequest;
 
 $webpag = WebPag::env();
 
@@ -34,10 +34,18 @@ $address->city = 'São Paulo';
 $address->state = 'SP';
 $request->address = $address;
 
-$response = $webpag->payers->create($request);
+try {
+    // 3. Execute a criação
+    $payer = $webpag->payers->create($request);
 
-$payer = $response->getData();
+    echo "Pagador criado com sucesso!" . PHP_EOL;
+    echo "ID: " . ($payer->id ?? 'N/A') . PHP_EOL;
+    echo "Nome: " . ($payer->firstName ?? '') . ' ' .
+        ($payer->lastName ?? '') . PHP_EOL;
+    echo "Email: " . ($payer->email ?? '') . PHP_EOL;
 
-echo "Pagador criado!" . PHP_EOL;
-echo "ID: " . ($payer['id'] ?? 'N/A') . PHP_EOL;
-echo "Nome: " . ($payer['first_name'] ?? '') . ' ' . ($payer['last_name'] ?? '') . PHP_EOL;
+} catch (\WebPag\Exceptions\ApiException $e) {
+    echo "Erro ao criar pagador: " . $e->getErrorMessage() . PHP_EOL;
+    // O getResponseBody() contém os detalhes dos erros de validação
+    print_r($e->getResponseBody());
+}

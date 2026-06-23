@@ -3,20 +3,24 @@
 namespace WebPag\Resources;
 
 use WebPag\Http\ApiResponse;
+use WebPag\Responses\Payers\Payer;
+use WebPag\Responses\Card\CreditCard;
 use WebPag\Requests\Payers\CreatePayerRequest;
-use WebPag\Requests\Payers\SaveCreditCardRequest;
 use WebPag\Requests\Payers\UpdatePayerRequest;
+use WebPag\Requests\Payers\SaveCreditCardRequest;
 
 class Payers extends AbstractResource
 {
     /**
      * Listar os pagadores cadastrados.
      *
-     * @return ApiResponse
+     * @return Payer[]
      */
-    public function list()
+    public function list(): array
     {
-        return $this->http->get('api/payers');
+        $response = $this->http->get('api/payers');
+
+        return Payer::fromArrayCollection($response->getData());
     }
 
     /**
@@ -24,11 +28,13 @@ class Payers extends AbstractResource
      *
      * @param int|string $payerId
      *
-     * @return ApiResponse
+     * @return Payer
      */
-    public function find($payerId)
+    public function find($payerId): Payer
     {
-        return $this->http->get('api/payers/' . $payerId);
+        $response = $this->http->get('api/payers/' . $payerId);
+
+        return Payer::fromArray($response->getData());
     }
 
     /**
@@ -36,11 +42,16 @@ class Payers extends AbstractResource
      *
      * @param CreatePayerRequest|array<string, mixed> $request
      *
-     * @return ApiResponse
+     * @return Payer
      */
-    public function create($request)
+    public function create($request): Payer
     {
-        return $this->http->post('api/payers/register', $this->resolvePayload($request));
+        $response = $this->http->post(
+            'api/payers/register',
+            $this->resolvePayload($request)
+        );
+
+        return Payer::fromArray($response->getData());
     }
 
     /**
@@ -49,11 +60,16 @@ class Payers extends AbstractResource
      * @param int|string                          $payerId
      * @param UpdatePayerRequest|array<string, mixed> $request
      *
-     * @return ApiResponse
+     * @return Payer
      */
-    public function update($payerId, $request)
+    public function update($payerId, $request): Payer
     {
-        return $this->http->put('api/payers/' . $payerId . '/update', $this->resolvePayload($request));
+        $response = $this->http->put(
+            'api/payers/' . $payerId . '/update',
+            $this->resolvePayload($request)
+        );
+
+        return Payer::fromArray($response->getData());
     }
 
     /**
@@ -61,11 +77,13 @@ class Payers extends AbstractResource
      *
      * @param int|string $payerId
      *
-     * @return ApiResponse
+     * @return Payer
      */
-    public function inactivate($payerId)
+    public function inactivate($payerId): Payer
     {
-        return $this->http->put('api/payers/' . $payerId . '/inactivate');
+        $response = $this->http->put('api/payers/' . $payerId . '/inactivate');
+
+        return Payer::fromArray($response->getData());
     }
 
     /**
@@ -74,11 +92,16 @@ class Payers extends AbstractResource
      * @param int|string                              $payerId
      * @param SaveCreditCardRequest|array<string, mixed> $request
      *
-     * @return ApiResponse
+     * @return CreditCard
      */
-    public function saveCreditCard($payerId, $request)
+    public function saveCreditCard($payerId, $request): CreditCard
     {
-        return $this->http->post('api/payers/' . $payerId . '/creditcard', $this->resolvePayload($request));
+        $response = $this->http->post(
+            'api/payers/' . $payerId . '/creditcard',
+            $this->resolvePayload($request)
+        );
+
+        return CreditCard::fromArray($response->getData());
     }
 
     /**
@@ -91,7 +114,9 @@ class Payers extends AbstractResource
      */
     public function removeCreditCard($payerId, $cardId)
     {
-        return $this->http->delete('api/payers/' . $payerId . '/creditcard/' . $cardId . '/remove');
+        return $this->http->delete(
+            'api/payers/' . $payerId . '/creditcard/' . $cardId . '/remove'
+        );
     }
 
 }

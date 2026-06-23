@@ -3,25 +3,26 @@
 namespace WebPag\Tests;
 
 use PHPUnit\Framework\TestCase;
-use WebPag\Requests\Business\AuthenticateRequest;
-use WebPag\Requests\Business\CreateFranchiseRequest;
-use WebPag\Requests\Installments\CreateInstallmentRequest;
-use WebPag\Requests\Installments\ListInstallmentsRequest;
+use WebPag\Enums\PaymentStatus;
 use WebPag\Requests\Payers\Address;
+use WebPag\Requests\Payments\PaymentSplit;
+use WebPag\Requests\Payments\CreditCardData;
 use WebPag\Requests\Payers\CreatePayerRequest;
 use WebPag\Requests\Payers\UpdatePayerRequest;
+use WebPag\Requests\Business\AuthenticateRequest;
 use WebPag\Requests\Payers\SaveCreditCardRequest;
-use WebPag\Requests\Payments\ProcessPaymentRequest;
-use WebPag\Requests\Payments\CreditCardData;
-use WebPag\Requests\Payments\PaymentSplit;
 use WebPag\Requests\Payments\ListPaymentsRequest;
 use WebPag\Requests\Payments\RefundPaymentRequest;
-use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
-use WebPag\Requests\Recurrency\CreateRecurrencyRequest;
-use WebPag\Requests\Recurrency\ListRecurrencyRequest;
-use WebPag\Requests\Recurrency\UpdateRecurrencyRequest;
-use WebPag\Requests\Transfers\CreateTransferRequest;
+use WebPag\Requests\Payments\ProcessPaymentRequest;
 use WebPag\Requests\Transfers\ListTransfersRequest;
+use WebPag\Requests\Business\CreateFranchiseRequest;
+use WebPag\Requests\Transfers\CreateTransferRequest;
+use WebPag\Requests\Recurrency\ListRecurrencyRequest;
+use WebPag\Requests\Recurrency\CreateRecurrencyRequest;
+use WebPag\Requests\Recurrency\UpdateRecurrencyRequest;
+use WebPag\Requests\Installments\ListInstallmentsRequest;
+use WebPag\Requests\Installments\CreateInstallmentRequest;
+use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
 use WebPag\Requests\Transfers\ChangeTransferStatusDevRequest;
 
 class RequestPayloadsTest extends TestCase
@@ -151,14 +152,14 @@ class RequestPayloadsTest extends TestCase
     {
         $req = new ListPaymentsRequest();
         $req->payerId = 15;
-        $req->status = 40;
+        $req->status = PaymentStatus::PAID;
         $req->method = 'pix';
         $req->active = true;
 
         $result = $req->toArray();
 
         $this->assertEquals(15, $result['payer_id']);
-        $this->assertEquals(40, $result['status']);
+        $this->assertEquals(PaymentStatus::PAID, $result['status']);
         $this->assertEquals('pix', $result['method']);
         $this->assertTrue($result['active']);
         $this->assertArrayNotHasKey('payment_id', $result);
@@ -343,9 +344,9 @@ class RequestPayloadsTest extends TestCase
     public function testChangeTransferStatusDevRequest()
     {
         $req = new ChangeTransferStatusDevRequest();
-        $req->status = 40;
+        $req->status = PaymentStatus::PAID;
 
-        $this->assertEquals(['status' => 40], $req->toArray());
+        $this->assertEquals(['status' => PaymentStatus::PAID], $req->toArray());
     }
 
     public function testAddressToArray()

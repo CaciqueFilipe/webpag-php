@@ -2,8 +2,8 @@
 
 namespace WebPag\Requests\Payers;
 
-use WebPag\Contracts\RequestPayload;
 use WebPag\Support\ArrayHelper;
+use WebPag\Contracts\RequestPayload;
 
 class Address implements RequestPayload
 {

@@ -3,9 +3,13 @@
 namespace WebPag\Tests;
 
 use PHPUnit\Framework\TestCase;
-use WebPag\Exceptions\WebPagException;
+use WebPag\Enums\PaymentStatus;
 use WebPag\Webhooks\WebhookEvent;
+use WebPag\Responses\Payments\Payment;
+use WebPag\Responses\Transfers\Transfer;
+use WebPag\Responses\Payments\Refund;
 use WebPag\Webhooks\WebhookParser;
+use WebPag\Exceptions\WebPagException;
 
 class WebhookParserTest extends TestCase
 {
@@ -24,6 +28,7 @@ class WebhookParserTest extends TestCase
         $event = $this->parser->parse($json);
 
         $this->assertInstanceOf(WebhookEvent::class, $event);
+        $this->assertInstanceOf(Payment::class, $event->getPayload());
         $this->assertEquals(WebhookEvent::TYPE_PAYMENT, $event->getType());
         $this->assertTrue($event->isPayment());
         $this->assertFalse($event->isTransfer());
@@ -35,12 +40,13 @@ class WebhookParserTest extends TestCase
         $payload = [
             'id' => 456,
             'destination_type' => 10,
-            'status' => 40,
+            'status' => PaymentStatus::PAID,
             'amount' => 5000,
         ];
         $event = $this->parser->parse($payload);
 
         $this->assertEquals(WebhookEvent::TYPE_TRANSFER, $event->getType());
+        $this->assertInstanceOf(Transfer::class, $event->getPayload());
         $this->assertTrue($event->isTransfer());
     }
 
@@ -53,6 +59,7 @@ class WebhookParserTest extends TestCase
         $event = $this->parser->parse($payload);
 
         $this->assertEquals(WebhookEvent::TYPE_TRANSFER, $event->getType());
+        $this->assertInstanceOf(Transfer::class, $event->getPayload());
     }
 
     public function testParseRefundWebhook()
@@ -65,6 +72,7 @@ class WebhookParserTest extends TestCase
         $event = $this->parser->parse($payload);
 
         $this->assertEquals(WebhookEvent::TYPE_REFUND, $event->getType());
+        $this->assertInstanceOf(Refund::class, $event->getPayload());
         $this->assertTrue($event->isRefund());
     }
 
@@ -77,6 +85,7 @@ class WebhookParserTest extends TestCase
         $event = $this->parser->parse($payload);
 
         $this->assertEquals(WebhookEvent::TYPE_REFUND, $event->getType());
+        $this->assertInstanceOf(Refund::class, $event->getPayload());
     }
 
     public function testParseUnknownWebhook()
@@ -106,52 +115,42 @@ class WebhookParserTest extends TestCase
 
     public function testGetPayload()
     {
-        $payload = ['id' => 1, 'payer_id' => 5, 'status' => 40];
+        $payload = ['id' => 1, 'payer_id' => 5, 'status' => PaymentStatus::PAID];
         $event = $this->parser->parse($payload);
 
-        $this->assertEquals($payload, $event->getPayload());
+        $this->assertInstanceOf(Payment::class, $event->getPayload());
+        $this->assertEquals($payload, $event->getPayload()->toArray());
     }
 
     public function testGetStatus()
     {
-        $payload = ['payer_id' => 1, 'status' => 40];
+        $payload = ['payer_id' => 1, 'status' => PaymentStatus::PAID];
         $event = $this->parser->parse($payload);
+        /** @var Payment $payment */
+        $payment = $event->getPayload();
 
-        $this->assertEquals(40, $event->getStatus());
+        $this->assertEquals(PaymentStatus::PAID, $payment->status);
     }
 
     public function testGetStatusReturnsNullWhenMissing()
     {
         $payload = ['payer_id' => 1];
         $event = $this->parser->parse($payload);
+        /** @var Payment $payment */
+        $payment = $event->getPayload();
 
-        $this->assertNull($event->getStatus());
+        $this->assertNull($payment->status);
     }
 
     public function testGetBusinessId()
     {
         $payload = ['payer_id' => 1, 'business' => ['id' => 10]];
         $event = $this->parser->parse($payload);
+        /** @var Payment $payment */
+        $payment = $event->getPayload();
 
-        $this->assertEquals(10, $event->getBusinessId());
-    }
-
-    public function testGetBusinessIdReturnsNullWhenMissing()
-    {
-        $payload = ['payer_id' => 1];
-        $event = $this->parser->parse($payload);
-
-        $this->assertNull($event->getBusinessId());
-    }
-
-    public function testGetCustomField()
-    {
-        $payload = ['payer_id' => 1, 'custom_field' => 'custom_value'];
-        $event = $this->parser->parse($payload);
-
-        $this->assertEquals('custom_value', $event->get('custom_field'));
-        $this->assertNull($event->get('nonexistent'));
-        $this->assertEquals('default', $event->get('nonexistent', 'default'));
+        $this->assertNotNull($payment->business);
+        $this->assertEquals(10, $payment->business->id);
     }
 
     public function testVerifySignatureValid()
