@@ -1,6 +1,6 @@
 # WebPag PHP SDK
 
-SDK PHP para integração com a [API WebPag](https://api.webpag.com.br/docs). Compatível com **PHP puro (7.4+)** e **Laravel (5.8+)** — o Laravel é opcional.
+SDK PHP para integração com a [API WebPag](https://api.webpag.com.br/docs). Compatível com **PHP puro (7.2+)** e **Laravel (5.8+)** — o Laravel é opcional.
 
 ## Instalação
 
