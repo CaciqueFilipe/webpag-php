@@ -4,26 +4,28 @@ namespace WebPag\Tests;
 
 use PHPUnit\Framework\TestCase;
 use WebPag\Enums\PaymentStatus;
-use WebPag\Requests\Business\AuthenticateRequest;
-use WebPag\Requests\Business\CreateFranchiseRequest;
-use WebPag\Requests\Installments\CreateInstallmentRequest;
-use WebPag\Requests\Installments\ListInstallmentsRequest;
 use WebPag\Requests\Payers\Address;
-use WebPag\Requests\Payers\CreatePayerRequest;
-use WebPag\Requests\Payers\SaveCreditCardRequest;
-use WebPag\Requests\Payers\UpdatePayerRequest;
-use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
-use WebPag\Requests\Payments\CreditCardData;
-use WebPag\Requests\Payments\ListPaymentsRequest;
 use WebPag\Requests\Payments\PaymentSplit;
-use WebPag\Requests\Payments\ProcessPaymentRequest;
+use WebPag\Requests\Payers\ListPayerRequest;
+use WebPag\Requests\Payments\CreditCardData;
+use WebPag\Requests\Payers\CreatePayerRequest;
+use WebPag\Requests\Payers\UpdatePayerRequest;
+use WebPag\Requests\Business\AuthenticateRequest;
+use WebPag\Requests\Payers\SaveCreditCardRequest;
+use WebPag\Requests\Payments\ListPaymentsRequest;
 use WebPag\Requests\Payments\RefundPaymentRequest;
-use WebPag\Requests\Recurrency\CreateRecurrencyRequest;
-use WebPag\Requests\Recurrency\ListRecurrencyRequest;
-use WebPag\Requests\Recurrency\UpdateRecurrencyRequest;
-use WebPag\Requests\Transfers\ChangeTransferStatusDevRequest;
-use WebPag\Requests\Transfers\CreateTransferRequest;
+use WebPag\Requests\Payments\ProcessPaymentRequest;
 use WebPag\Requests\Transfers\ListTransfersRequest;
+use WebPag\Requests\Business\CreateFranchiseRequest;
+use WebPag\Requests\Transfers\CreateTransferRequest;
+use WebPag\Requests\Recurrency\ListRecurrencyRequest;
+use WebPag\Requests\Recurrency\CreateRecurrencyRequest;
+use WebPag\Requests\Recurrency\UpdateRecurrencyRequest;
+use WebPag\Requests\PaymentLinks\ListPaymentLinkRequest;
+use WebPag\Requests\Installments\ListInstallmentsRequest;
+use WebPag\Requests\Installments\CreateInstallmentRequest;
+use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
+use WebPag\Requests\Transfers\ChangeTransferStatusDevRequest;
 
 class RequestPayloadsTest extends TestCase
 {
@@ -216,6 +218,19 @@ class RequestPayloadsTest extends TestCase
         $this->assertArrayNotHasKey('last_name', $result);
     }
 
+    public function testListPayerRequest()
+    {
+        $req = new ListPayerRequest();
+        $req->cpfCnpj = '11122233344';
+        $req->page = 1;
+
+        $result = $req->toArray();
+
+        $this->assertEquals('11122233344', $result['cpf_cnpj']);
+        $this->assertEquals(1, $result['page']);
+        $this->assertArrayNotHasKey('per_page', $result);
+    }
+
     public function testSaveCreditCardRequest()
     {
         $req = new SaveCreditCardRequest();
@@ -248,6 +263,21 @@ class RequestPayloadsTest extends TestCase
         $this->assertEquals('2025-12-31', $result['validity']);
         $this->assertEquals(6, $result['number_installments']);
         $this->assertArrayNotHasKey('is_recurrence', $result);
+    }
+
+    public function testListPaymentLinkRequest()
+    {
+        $req = new ListPaymentLinkRequest();
+        $req->payerId = 12;
+        $req->value = 1000;
+        $req->page = 1;
+
+        $result = $req->toArray();
+
+        $this->assertEquals(1000, $result['value']);
+        $this->assertEquals(12, $result['payer_id']);
+        $this->assertEquals(1, $result['page']);
+        $this->assertArrayNotHasKey('per_page', $result);
     }
 
     public function testCreateRecurrencyRequest()

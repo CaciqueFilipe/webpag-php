@@ -3,22 +3,28 @@
 namespace WebPag\Resources;
 
 use WebPag\Http\ApiResponse;
-use WebPag\Requests\Payers\CreatePayerRequest;
-use WebPag\Requests\Payers\SaveCreditCardRequest;
-use WebPag\Requests\Payers\UpdatePayerRequest;
-use WebPag\Responses\Card\CreditCard;
 use WebPag\Responses\Payers\Payer;
+use WebPag\Responses\Card\CreditCard;
+use WebPag\Requests\Payers\ListPayerRequest;
+use WebPag\Requests\Payers\CreatePayerRequest;
+use WebPag\Requests\Payers\UpdatePayerRequest;
+use WebPag\Requests\Payers\SaveCreditCardRequest;
 
 class Payers extends AbstractResource
 {
     /**
      * Listar os pagadores cadastrados.
+     * 
+     * @param ListPayerRequest|array<string, mixed>|null $filters
      *
      * @return Payer[]
      */
-    public function list(): array
+    public function list($filters = null): array
     {
-        $response = $this->http->get('api/payers');
+        $response = $this->http->get(
+            'api/payers',
+            $this->resolvePayload($filters)
+        );
 
         return Payer::fromArrayCollection($response->getData());
     }

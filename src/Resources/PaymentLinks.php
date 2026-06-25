@@ -2,19 +2,25 @@
 
 namespace WebPag\Resources;
 
-use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
 use WebPag\Responses\PaymentLinks\PaymentLink;
+use WebPag\Requests\PaymentLinks\ListPaymentLinkRequest;
+use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
 
 class PaymentLinks extends AbstractResource
 {
     /**
      * Listar os links de pagamento.
+     * 
+     * @param ListPaymentLinkRequest|array<string, mixed>|null $filters
      *
      * @return PaymentLink[]
      */
-    public function list(): array
+    public function list($filters): array
     {
-        $response = $this->http->get('api/payment-links');
+        $response = $this->http->get(
+            'api/payment-links',
+            $this->resolvePayload($filters)
+        );
 
         return PaymentLink::fromArrayCollection($response->getData());
     }
