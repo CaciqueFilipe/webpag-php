@@ -67,9 +67,6 @@ class Recurrency implements ResponsePayload
     /** @var string|null */
     public $notificationUrl;
 
-    /** @var array<string, mixed>|null */
-    public $pix;
-
     /** @var int|null */
     public $installmentsPaid;
 
@@ -145,7 +142,6 @@ class Recurrency implements ResponsePayload
         $instance->methodLabel = $data['method_label'] ?? null;
         $instance->methodSlug = $data['method_slug'] ?? null;
         $instance->notificationUrl = $data['notification_url'] ?? null;
-        $instance->pix = $data['pix'] ?? null;
         $instance->installmentsPaid = isset($data['installments_paid']) ? (int)$data['installments_paid'] : null;
         $instance->spplited = isset($data['spplited']) ? (bool)$data['spplited'] : null;
         $instance->softDescriptor = $data['soft_descriptor'] ?? null;
@@ -204,7 +200,6 @@ class Recurrency implements ResponsePayload
             'method_slug' => $this->methodSlug,
             'boleto' => $this->boleto ? $this->boleto->toArray() : null,
             'notification_url' => $this->notificationUrl,
-            'pix' => $this->pix,
             'installments_paid' => $this->installmentsPaid,
             'spplited' => $this->spplited,
             'soft_descriptor' => $this->softDescriptor,

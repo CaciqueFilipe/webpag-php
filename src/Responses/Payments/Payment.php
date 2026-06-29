@@ -2,9 +2,9 @@
 
 namespace WebPag\Responses\Payments;
 
+use WebPag\Responses\Payers\Payer;
 use WebPag\Contracts\ResponsePayload;
 use WebPag\Responses\Business\Business;
-use WebPag\Responses\Payers\Payer;
 
 class Payment implements ResponsePayload
 {
@@ -65,7 +65,7 @@ class Payment implements ResponsePayload
     /** @var string|null */
     public $notificationUrl;
 
-    /** @var mixed|null */
+    /** @var Pix|null */
     public $pix;
 
     /** @var int|null */
@@ -143,7 +143,6 @@ class Payment implements ResponsePayload
         $instance->methodLabel = $data['method_label'] ?? null;
         $instance->methodSlug = $data['method_slug'] ?? null;
         $instance->notificationUrl = $data['notification_url'] ?? null;
-        $instance->pix = $data['pix'] ?? null;
         $instance->installmentsPaid = isset($data['installments_paid']) ? (int) $data['installments_paid'] : null;
         $instance->spplited = isset($data['spplited']) ? (bool) $data['spplited'] : null;
         $instance->softDescriptor = $data['soft_descriptor'] ?? null;
@@ -175,6 +174,10 @@ class Payment implements ResponsePayload
         if (isset($data['boleto']) && is_array($data['boleto'])) {
             $instance->boleto = BankSlip::fromArray($data['boleto']);
         }
+    
+        if (isset($data['pix']) && is_array($data['pix'])) {
+            $instance->pix = Pix::fromArray($data['pix']);
+        }
 
         return $instance;
     }
@@ -204,7 +207,7 @@ class Payment implements ResponsePayload
             'method_slug' => $this->methodSlug,
             'boleto' => $this->boleto ? $this->boleto->toArray() : null,
             'notification_url' => $this->notificationUrl,
-            'pix' => $this->pix,
+            'pix' => $this->pix ? $this->pix->toArray() : null,
             'installments_paid' => $this->installmentsPaid,
             'spplited' => $this->spplited,
             'soft_descriptor' => $this->softDescriptor,
