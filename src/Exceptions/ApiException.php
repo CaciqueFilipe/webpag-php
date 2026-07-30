@@ -60,4 +60,56 @@ class ApiException extends WebPagException
 
         return null;
     }
+
+    /**
+     * Retorna o código de erro interno retornado pela API WebPag.
+     *
+     * @return int|null
+     */
+    public function getErrorCode()
+    {
+        if (is_array($this->responseBody) && isset($this->responseBody['error_code'])) {
+            return (int) $this->responseBody['error_code'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Retorna o erro anterior/detalhado (error_previous).
+     * Se for uma string JSON válida (ex: erros da adquirente/banco),
+     * decodifica automaticamente para array/object.
+     *
+     * @param bool $asArray Define se retorna como array associativo (true) ou stdClass (false)
+     * @return array|string|null
+     */
+    public function getErrorPrevious($asArray = true)
+    {
+        if (! is_array($this->responseBody) || ! isset($this->responseBody['error_previous'])) {
+            return null;
+        }
+
+        $previous = $this->responseBody['error_previous'];
+
+        if (is_string($previous)) {
+            $decoded = json_decode($previous, $asArray);
+            return json_last_error() === JSON_ERROR_NONE ? $decoded : $previous;
+        }
+
+        return $previous;
+    }
+
+    /**
+     * Retorna o trace do erro retornado pela API, se houver.
+     *
+     * @return array|null
+     */
+    public function getErrorTrace()
+    {
+        if (is_array($this->responseBody) && isset($this->responseBody['error_trace'])) {
+            return (array) $this->responseBody['error_trace'];
+        }
+
+        return null;
+    }
 }

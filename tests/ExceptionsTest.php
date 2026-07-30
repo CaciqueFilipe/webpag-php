@@ -83,4 +83,69 @@ class ExceptionsTest extends TestCase
 
         $this->assertSame($previous, $e->getPrevious());
     }
+
+    public function testApiExceptionGetErrorCode()
+    {
+        $body = ['error_code' => 18];
+        $e = new ApiException('API Error', 400, $body);
+
+        $this->assertEquals(18, $e->getErrorCode());
+    }
+
+    public function testApiExceptionGetErrorCodeReturnsNullWhenMissing()
+    {
+        $e = new ApiException('API Error', 400, []);
+
+        $this->assertNull($e->getErrorCode());
+    }
+
+    public function testApiExceptionGetErrorPreviousParsesJsonString()
+    {
+        $jsonPrevious = '{"erros":[{"codigo":"4500718","mensagem":"O CPF informado para o pagador está inválido."}]}';
+        $body = [
+            'error_previous' => $jsonPrevious
+        ];
+
+        $e = new ApiException('API Error', 400, $body);
+
+        $resultArray = $e->getErrorPrevious(true);
+        $this->assertIsArray($resultArray);
+        $this->assertEquals('O CPF informado para o pagador está inválido.', $resultArray['erros'][0]['mensagem']);
+
+        $resultObject = $e->getErrorPrevious(false);
+        $this->assertIsObject($resultObject);
+        $this->assertEquals('O CPF informado para o pagador está inválido.', $resultObject->erros[0]->mensagem);
+    }
+
+    public function testApiExceptionGetErrorPreviousReturnsRawStringIfNotJson()
+    {
+        $body = ['error_previous' => 'Texto simples de erro'];
+        $e = new ApiException('API Error', 400, $body);
+
+        $this->assertEquals('Texto simples de erro', $e->getErrorPrevious());
+    }
+
+    public function testApiExceptionGetErrorPreviousReturnsNullWhenMissing()
+    {
+        $e = new ApiException('API Error', 400, []);
+
+        $this->assertNull($e->getErrorPrevious());
+    }
+
+    public function testApiExceptionGetErrorTrace()
+    {
+        $trace = ['#0 /path/to/file.php(10): method()'];
+        $body = ['error_trace' => $trace];
+
+        $e = new ApiException('API Error', 500, $body);
+
+        $this->assertEquals($trace, $e->getErrorTrace());
+    }
+
+    public function testApiExceptionGetErrorTraceReturnsNullWhenMissing()
+    {
+        $e = new ApiException('API Error', 500, []);
+
+        $this->assertNull($e->getErrorTrace());
+    }
 }

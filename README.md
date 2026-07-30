@@ -1,5 +1,10 @@
 # WebPag PHP SDK
 
+[![Latest Stable Version](https://poser.pugx.org/filipecacique/webpag-php/v/stable)](https://packagist.org/packages/filipecacique/webpag-php)
+[![Total Downloads](https://poser.pugx.org/filipecacique/webpag-php/downloads)](https://packagist.org/packages/filipecacique/webpag-php)
+[![License](https://poser.pugx.org/filipecacique/webpag-php/license)](https://packagist.org/packages/filipecacique/webpag-php)
+[![PHP Version Require](https://poser.pugx.org/filipecacique/webpag-php/require/php)](https://packagist.org/packages/filipecacique/webpag-php)
+
 SDK PHP para integração com a [API WebPag](https://api.webpag.com.br/docs). Compatível com **PHP puro (7.2+)** e **Laravel (5.8+)** — o Laravel é opcional.
 
 ## Instalação
@@ -252,9 +257,16 @@ use WebPag\Exceptions\ApiException;
 try {
     $webpag->payments->find(99999);
 } catch (ApiException $e) {
-    echo $e->getStatusCode();      // 404
-    echo $e->getErrorMessage();    // Mensagem da API
     print_r($e->getResponseBody()); // Corpo completo
+    echo "HTTP Status: " . $e->getStatusCode();      // 404
+    echo "Mensagem: " . $e->getErrorMessage();    // Mensagem da API
+    echo "Código Erro: " . $e->getErrorCode();   // Erro WebPag identificador
+
+    // Detalhe especifico de falha:
+    $detalhes = $e->getErrorPrevious();
+    if (isset($detalhes['erros'][0]['mensagem'])) {
+        echo "Causa real: " . $detalhes['erros'][0]['mensagem'];
+    }
 }
 ```
 
