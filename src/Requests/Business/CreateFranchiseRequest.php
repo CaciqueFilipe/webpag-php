@@ -56,6 +56,9 @@ class CreateFranchiseRequest implements RequestPayload
     /** @var Address|null */
     public $address;
 
+    /** @var bool|null */
+    public $boletoEnabled;
+
     /**
      * @return array<string, mixed>
      */
@@ -77,6 +80,7 @@ class CreateFranchiseRequest implements RequestPayload
             'pix_key_type' => $this->pixKeyType,
             'pix_key' => $this->pixKey,
             'phone_number' => $this->phoneNumber,
+            'boleto_enabled ' => $this->boletoEnabled
         ]);
 
         if ($this->address !== null) {
@@ -117,6 +121,9 @@ class CreateFranchiseRequest implements RequestPayload
             : null;
         $request->pixKey = $data['pix_key'] ?? null;
         $request->phoneNumber = $data['phone_number'] ?? null;
+        $request->boletoEnabled = isset($data['boleto_enabled'])
+            ? (bool) $data['boleto_enabled']
+            : null;
 
         // Trata o objeto aninhado de Endereço se ele vier como array
         if (isset($data['address']) && is_array($data['address'])) {
