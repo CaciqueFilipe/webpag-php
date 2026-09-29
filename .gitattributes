@@ -1,0 +1,9 @@
+# Arquivos fora do pacote distribuído (composer install --prefer-dist)
+/.github            export-ignore
+/.claude            export-ignore
+/tests              export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/phpunit.xml        export-ignore
+/CLAUDE.md          export-ignore

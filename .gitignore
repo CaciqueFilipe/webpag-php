@@ -1,5 +1,13 @@
 # Dependências
 /vendor/
+# Biblioteca: o lock não é versionado, cada ambiente resolve conforme sua versão de PHP
+/composer.lock
+
+# Respostas reais da API usadas para conferir tipagem: contêm dados pessoais (CPF, e-mail, CNPJ).
+# Use sempre fixtures anonimizadas em tests/fixtures/.
+/response.json
+/response*.json
+/resposta*.json
 
 # Ferramentas de Desenvolvimento e IDEs
 .idea/

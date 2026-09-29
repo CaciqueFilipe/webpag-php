@@ -1,0 +1,209 @@
+{
+    "data": [
+        {
+            "id": 676426,
+            "business": {
+                "id": 8421,
+                "name": "EMPRESA TESTE"
+            },
+            "payer_id": 245044,
+            "card_id": null,
+            "payer": {
+                "id": 245044,
+                "cpf_cnpj": "00000000191",
+                "is_business": false,
+                "email": "pagador@example.com",
+                "first_name": "FULANO",
+                "last_name": "DE TAL",
+                "gender": "M",
+                "phone_number": null,
+                "birth_date": "1954-12-11",
+                "address": {
+                    "zip_code": "90030-040",
+                    "street": "Rua Exemplo",
+                    "number": "408",
+                    "district": "Centro",
+                    "city": "Porto Alegre",
+                    "state": "RS",
+                    "country": "BR"
+                },
+                "use_boleto": null,
+                "status": 10,
+                "status_label": "Ativo",
+                "created_at": "2026-08-26 22:15:46",
+                "updated_at": "2026-09-18 14:35:21"
+            },
+            "name": "App ba19a4a4",
+            "amount": 156,
+            "amount_refunded": 0,
+            "fee_value": "0.36",
+            "refunded_fee": 0,
+            "installments": 1,
+            "is_recurrent": false,
+            "recurrence_code": null,
+            "frequency": null,
+            "method": 40,
+            "method_label": "Pix",
+            "method_slug": "pix",
+            "boleto": null,
+            "notification_url": null,
+            "pix": {
+                "id": 431507,
+                "uuid": "3233b3a7-0ed4-4526-9bcf-6630dfb219a4",
+                "business_id": 8421,
+                "payment_id": 676426,
+                "name": null,
+                "txid": "bdV4p5XIWImMQix4cIgH0kQbFFRxfenUsTc",
+                "key": "00020101021226850014br.gov.bcb.pix",
+                "qrcode_data": "00020101021226850014br.gov.bcb.pix",
+                "amount": "2.55",
+                "expiration_date": "2026-09-23T18:32:19.000000Z",
+                "status": 20,
+                "created_at": "2026-09-23T17:32:21.000000Z",
+                "updated_at": "2026-09-23T17:33:05.000000Z"
+            },
+            "installments_paid": 0,
+            "spplited": true,
+            "soft_descriptor": null,
+            "order_id": "ba19a4a4-b774-11f1-98cf-e6864b1f6b7e",
+            "active": true,
+            "status": 40,
+            "status_label": "Pago",
+            "start_date": null,
+            "next_date": null,
+            "next_recurrence_date": null,
+            "transactions": [
+                {
+                    "id": 827211,
+                    "type": 10,
+                    "type_label": "Aprovação",
+                    "transaction_id": "bdV4p5XIWImMQix4cIgH0kQbFFRxfenUsTc",
+                    "response_status": "OK",
+                    "errors": null,
+                    "status": 10,
+                    "status_label": "Sucesso",
+                    "refunded_amount": null,
+                    "created_at": "2026-09-23 14:32"
+                }
+            ],
+            "splits": [
+                {
+                    "business_destination_id": 7461,
+                    "business_destination_name": "Parceiro LTDA",
+                    "value": 0,
+                    "percentage": 0,
+                    "amount": 99
+                }
+            ],
+            "refunds": [],
+            "created_at": "2026-09-23 14:32",
+            "paid_at": "2026-09-23 14:33",
+            "updated_at": "2026-09-23 14:33",
+            "receipt_pdf_path": "https://api.webpag.com.br/payments/01M37N6MZ9SSNA213SB1R6BZTB/pdf",
+            "credit_schedule": [
+                {
+                    "id": 618306,
+                    "amount": 120,
+                    "date_scheduled": "2026-09-23T17:33:05.000000Z",
+                    "credited": true,
+                    "status": 10,
+                    "transfer_id": null,
+                    "transferred_at": null
+                }
+            ],
+            "card_flag": null,
+            "card_flag_label": null
+        },
+        {
+            "id": 676347,
+            "business": {
+                "id": 8421,
+                "name": "EMPRESA TESTE"
+            },
+            "payer_id": 245044,
+            "card_id": 346569,
+            "payer": null,
+            "name": "App e643472e",
+            "amount": 194,
+            "amount_refunded": 0,
+            "fee_value": "0.04",
+            "refunded_fee": 0,
+            "installments": 1,
+            "is_recurrent": false,
+            "recurrence_code": null,
+            "frequency": null,
+            "method": 10,
+            "method_label": "Cartão de Crédito",
+            "method_slug": "credit_card",
+            "boleto": null,
+            "notification_url": null,
+            "pix": null,
+            "installments_paid": 0,
+            "spplited": true,
+            "soft_descriptor": null,
+            "order_id": "e643472e-b74c-11f1-a351-e6864b1f6b7e",
+            "active": true,
+            "status": 40,
+            "status_label": "Pago",
+            "start_date": null,
+            "next_date": null,
+            "next_recurrence_date": null,
+            "transactions": [
+                {
+                    "id": 827052,
+                    "type": 10,
+                    "type_label": "Aprovação",
+                    "transaction_id": "10955411855MCGI1NU1E",
+                    "response_status": "00 - Transacao capturada com sucesso",
+                    "errors": null,
+                    "status": 10,
+                    "status_label": "Sucesso",
+                    "refunded_amount": null,
+                    "created_at": "2026-09-23 09:47"
+                }
+            ],
+            "splits": [
+                {
+                    "business_destination_id": 7461,
+                    "business_destination_name": "Parceiro LTDA",
+                    "value": 3.2,
+                    "percentage": 3.2,
+                    "amount": 0
+                }
+            ],
+            "refunds": [],
+            "created_at": "2026-09-23 09:47",
+            "paid_at": "2026-09-23 09:47",
+            "updated_at": "2026-09-23 09:47",
+            "receipt_pdf_path": "https://api.webpag.com.br/payments/01M374WM4FAQHT2M8RVBGCVVPA/pdf",
+            "credit_schedule": [
+                {
+                    "id": 617890,
+                    "amount": 161,
+                    "date_scheduled": "2026-09-21T19:54:50.000000Z",
+                    "credited": true,
+                    "status": 10,
+                    "transfer_id": 6255,
+                    "transferred_at": "2026-09-22T03:00:03.000000Z"
+                }
+            ],
+            "card_flag": 20,
+            "card_flag_label": "Mastercard"
+        }
+    ],
+    "links": {
+        "first": "https://api.webpag.com.br/api/payments?page=1",
+        "last": "https://api.webpag.com.br/api/payments?page=3",
+        "prev": null,
+        "next": "https://api.webpag.com.br/api/payments?page=2"
+    },
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 3,
+        "path": "https://api.webpag.com.br/api/payments",
+        "per_page": 15,
+        "to": 15,
+        "total": 34
+    }
+}

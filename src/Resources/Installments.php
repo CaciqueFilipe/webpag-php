@@ -5,6 +5,7 @@ namespace WebPag\Resources;
 use WebPag\Requests\Installments\CreateInstallmentRequest;
 use WebPag\Requests\Installments\ListInstallmentsRequest;
 use WebPag\Responses\Installments\InstallmentPlan;
+use WebPag\Responses\Pagination\PaginatedCollection;
 
 class Installments extends AbstractResource
 {
@@ -13,16 +14,16 @@ class Installments extends AbstractResource
      *
      * @param ListInstallmentsRequest|array<string, mixed>|null $filters
      *
-     * @return InstallmentPlan[]
+     * @return PaginatedCollection|InstallmentPlan[]
      */
-    public function list($filters = null): array
+    public function list($filters = null): PaginatedCollection
     {
         $response = $this->http->get(
             'api/installments',
             $this->resolvePayload($filters)
         );
 
-        return InstallmentPlan::fromArrayCollection($response->getData());
+        return $this->paginate($response, InstallmentPlan::class);
     }
 
     /**
@@ -51,7 +52,7 @@ class Installments extends AbstractResource
      */
     public function find($installmentPlanId): InstallmentPlan
     {
-        $response = $this->http->get('api/installments/' . $installmentPlanId);
+        $response = $this->http->get($this->path('api/installments/%s', $installmentPlanId));
 
         return InstallmentPlan::fromArray($response->getData());
     }
@@ -65,7 +66,7 @@ class Installments extends AbstractResource
      */
     public function cancel($installmentPlanId): InstallmentPlan
     {
-        $response = $this->http->post('api/installments/' . $installmentPlanId . '/cancel');
+        $response = $this->http->post($this->path('api/installments/%s/cancel', $installmentPlanId));
 
         return InstallmentPlan::fromArray($response->getData());
     }

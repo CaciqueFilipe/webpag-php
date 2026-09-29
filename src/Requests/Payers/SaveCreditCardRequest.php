@@ -4,6 +4,7 @@ namespace WebPag\Requests\Payers;
 
 use WebPag\Contracts\RequestPayload;
 use WebPag\Support\ArrayHelper;
+use WebPag\Support\SensitiveData;
 
 class SaveCreditCardRequest implements RequestPayload
 {
@@ -38,6 +39,23 @@ class SaveCreditCardRequest implements RequestPayload
             'expiration_year' => $this->expirationYear,
             'security_code' => $this->securityCode,
         ]);
+    }
+
+    /**
+     * Evita que var_dump/print_r/dd exponham número completo, CVV e token (PCI-DSS).
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo()
+    {
+        return [
+            'cardToken' => $this->cardToken !== null ? SensitiveData::mask($this->cardToken) : null,
+            'number' => SensitiveData::maskCardNumber($this->number),
+            'name' => $this->name,
+            'expirationMonth' => $this->expirationMonth,
+            'expirationYear' => $this->expirationYear,
+            'securityCode' => $this->securityCode !== null ? '***' : null,
+        ];
     }
 
     /**

@@ -90,7 +90,25 @@ class Refund implements ResponsePayload
      */
     public function toArray(): array
     {
-        return array_filter(get_object_vars($this), function ($value) {
+        return array_filter([
+            'id' => $this->id,
+            'payment_id' => $this->paymentId,
+            'business_id' => $this->businessId,
+            'status' => $this->status,
+            'status_label' => $this->statusLabel,
+            'refund_amount' => $this->refundAmount,
+            'refund_fee' => $this->refundFee,
+            'before_amount' => $this->beforeAmount,
+            'before_fee' => $this->beforeFee,
+            'after_amount' => $this->afterAmount,
+            'after_fee' => $this->afterFee,
+            'credit_schedule_refund' => $this->creditScheduleRefund,
+            'financial_entry_refund' => $this->financialEntryRefund,
+            'refund_receipt_url' => $this->refundReceiptUrl,
+            'processed_at' => $this->processedAt,
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
+        ], function ($value) {
             return $value !== null;
         });
     }

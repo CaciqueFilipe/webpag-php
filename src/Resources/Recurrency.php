@@ -5,6 +5,7 @@ namespace WebPag\Resources;
 use WebPag\Requests\Recurrency\CreateRecurrencyRequest;
 use WebPag\Requests\Recurrency\ListRecurrencyRequest;
 use WebPag\Requests\Recurrency\UpdateRecurrencyRequest;
+use WebPag\Responses\Pagination\PaginatedCollection;
 use WebPag\Responses\Recurrency\Recurrency as RecurrencyResponse;
 
 class Recurrency extends AbstractResource
@@ -31,16 +32,16 @@ class Recurrency extends AbstractResource
      *
      * @param ListRecurrencyRequest|array<string, mixed>|null $filters
      *
-     * @return RecurrencyResponse[]
+     * @return PaginatedCollection|RecurrencyResponse[]
      */
-    public function list($filters = null): array
+    public function list($filters = null): PaginatedCollection
     {
         $response = $this->http->get(
             'api/payments/recurrency/list',
             $this->resolvePayload($filters)
         );
 
-        return RecurrencyResponse::fromArrayCollection($response->getData());
+        return $this->paginate($response, RecurrencyResponse::class);
     }
 
     /**
@@ -54,7 +55,7 @@ class Recurrency extends AbstractResource
     public function update($recurrenceCode, $request): RecurrencyResponse
     {
         $response = $this->http->put(
-            'api/payments/recurrency/' . $recurrenceCode . '/update',
+            $this->path('api/payments/recurrency/%s/update', $recurrenceCode),
             $this->resolvePayload($request)
         );
 
@@ -71,7 +72,7 @@ class Recurrency extends AbstractResource
     public function cancel($recurrenceCode): RecurrencyResponse
     {
         $response = $this->http->put(
-            'api/payments/recurrency/' . $recurrenceCode . '/cancel'
+            $this->path('api/payments/recurrency/%s/cancel', $recurrenceCode)
         );
 
         return RecurrencyResponse::fromArray($response->getData());

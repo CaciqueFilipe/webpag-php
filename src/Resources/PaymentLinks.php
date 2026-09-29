@@ -2,6 +2,7 @@
 
 namespace WebPag\Resources;
 
+use WebPag\Responses\Pagination\PaginatedCollection;
 use WebPag\Responses\PaymentLinks\PaymentLink;
 use WebPag\Requests\PaymentLinks\ListPaymentLinkRequest;
 use WebPag\Requests\PaymentLinks\CreatePaymentLinkRequest;
@@ -13,16 +14,16 @@ class PaymentLinks extends AbstractResource
      * 
      * @param ListPaymentLinkRequest|array<string, mixed>|null $filters
      *
-     * @return PaymentLink[]
+     * @return PaginatedCollection|PaymentLink[]
      */
-    public function list($filters): array
+    public function list($filters = null): PaginatedCollection
     {
         $response = $this->http->get(
             'api/payment-links',
             $this->resolvePayload($filters)
         );
 
-        return PaymentLink::fromArrayCollection($response->getData());
+        return $this->paginate($response, PaymentLink::class);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace WebPag\Resources;
 use WebPag\Requests\Transfers\ChangeTransferStatusDevRequest;
 use WebPag\Requests\Transfers\CreateTransferRequest;
 use WebPag\Requests\Transfers\ListTransfersRequest;
+use WebPag\Responses\Pagination\PaginatedCollection;
 use WebPag\Responses\Transfers\Transfer;
 
 class Transfers extends AbstractResource
@@ -14,13 +15,13 @@ class Transfers extends AbstractResource
      *
      * @param ListTransfersRequest|array<string, mixed>|null $filters
      *
-     * @return Transfer[]
+     * @return PaginatedCollection|Transfer[]
      */
-    public function list($filters = null): array
+    public function list($filters = null): PaginatedCollection
     {
         $response = $this->http->get('api/transfers', $this->resolvePayload($filters));
 
-        return Transfer::fromArrayCollection($response->getData());
+        return $this->paginate($response, Transfer::class);
     }
 
     /**
@@ -46,7 +47,7 @@ class Transfers extends AbstractResource
      */
     public function find($transferId): Transfer
     {
-        $response = $this->http->get('api/transfers/' . $transferId);
+        $response = $this->http->get($this->path('api/transfers/%s', $transferId));
 
         return Transfer::fromArray($response->getData());
     }
@@ -60,7 +61,7 @@ class Transfers extends AbstractResource
      */
     public function cancel($transferId): Transfer
     {
-        $response = $this->http->delete('api/transfers/' . $transferId);
+        $response = $this->http->delete($this->path('api/transfers/%s', $transferId));
         $data = $response->getData();
 
         // O endpoint de cancelamento retorna { "message": "...", "transfer": { ... } }
@@ -81,7 +82,7 @@ class Transfers extends AbstractResource
     public function changeStatusDev($transferId, $request): Transfer
     {
         $response = $this->http->post(
-            'api/transfers/' . $transferId . '/change-status-dev',
+            $this->path('api/transfers/%s/change-status-dev', $transferId),
             $this->resolvePayload($request)
         );
 

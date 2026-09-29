@@ -2,6 +2,8 @@
 
 namespace WebPag;
 
+use WebPag\Support\SensitiveData;
+
 class Environment
 {
     public const ENV_API_TOKEN = 'WEBPAG_API_TOKEN';
@@ -109,9 +111,25 @@ class Environment
     }
 
     /**
+     * Evita que var_dump/print_r/dd exponham o token.
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo()
+    {
+        return [
+            'apiToken' => SensitiveData::mask($this->apiToken),
+            'baseUrl' => $this->baseUrl,
+            'timeout' => $this->timeout,
+        ];
+    }
+
+    /**
      * Converte esta Environment para uma Configuration.
      *
      * @return Configuration
+     *
+     * @throws \InvalidArgumentException Se a URL base for insegura ou o timeout inválido
      */
     public function toConfiguration()
     {

@@ -48,7 +48,7 @@ class WebPag
      * @param Configuration   $config
      * @param HttpClient|null $httpClient
      */
-    public function __construct(Configuration $config, HttpClient $httpClient = null)
+    public function __construct(Configuration $config, ?HttpClient $httpClient = null)
     {
         $this->config = $config;
         $this->http = $httpClient !== null ? $httpClient : new HttpClient($config);
@@ -113,6 +113,83 @@ class WebPag
         }
 
         return new self($config);
+    }
+
+    /**
+     * Acessores em forma de método, necessários para a Facade do Laravel
+     * (ex: WebPag::payers()->list()), que só encaminha chamadas de método.
+     *
+     * @return Installments
+     */
+    public function installments()
+    {
+        return $this->installments;
+    }
+
+    /**
+     * @return Business
+     */
+    public function business()
+    {
+        return $this->business;
+    }
+
+    /**
+     * @return PaymentLinks
+     */
+    public function paymentLinks()
+    {
+        return $this->paymentLinks;
+    }
+
+    /**
+     * @return Payers
+     */
+    public function payers()
+    {
+        return $this->payers;
+    }
+
+    /**
+     * @return Payments
+     */
+    public function payments()
+    {
+        return $this->payments;
+    }
+
+    /**
+     * @return Recurrency
+     */
+    public function recurrency()
+    {
+        return $this->recurrency;
+    }
+
+    /**
+     * @return Transfers
+     */
+    public function transfers()
+    {
+        return $this->transfers;
+    }
+
+    /**
+     * @return WebhookParser
+     */
+    public function webhooks()
+    {
+        return $this->webhooks;
+    }
+
+    /**
+     * Evita que var_dump/print_r/dd exponham o token.
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo()
+    {
+        return ['config' => $this->config];
     }
 
     /**
