@@ -25,20 +25,35 @@ class ApiResponse implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @param ResponseInterface $response
+     * Cria a partir do corpo cru (JSON) e do status HTTP.
+     *
+     * @param string $contents
+     * @param int    $statusCode
      *
      * @return self
      */
-    public static function fromResponse(ResponseInterface $response)
+    public static function fromRaw($contents, $statusCode)
     {
-        $contents = (string) $response->getBody();
+        $contents = (string) $contents;
         $decoded = json_decode($contents, true);
 
         if (! is_array($decoded)) {
             $decoded = ['raw' => $contents];
         }
 
-        return new self($decoded, $response->getStatusCode());
+        return new self($decoded, (int) $statusCode);
+    }
+
+    /**
+     * Cria a partir de uma resposta PSR-7 (exige psr/http-message instalado no projeto).
+     *
+     * @param ResponseInterface $response
+     *
+     * @return self
+     */
+    public static function fromResponse(ResponseInterface $response)
+    {
+        return self::fromRaw((string) $response->getBody(), $response->getStatusCode());
     }
 
     /**
@@ -97,7 +112,7 @@ class ApiResponse implements ArrayAccess, JsonSerializable
     #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
-        return $this->body[$offset];
+        return array_key_exists($offset, $this->body) ? $this->body[$offset] : null;
     }
 
     /**

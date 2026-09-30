@@ -12,7 +12,7 @@ Antes de começar, confirme com o usuário (ou na documentação que ele enviou)
 - IDs no caminho **sempre** via `$this->path('api/recurso/%s/acao', $id)`, nunca com concatenação.
 - Corpo e filtros aceitam `RequestDto|array|null` e passam por `$this->resolvePayload($x)`.
 - Listagem: `return $this->paginate($response, Dto::class);` com retorno `: PaginatedCollection`.
-- Objeto único: `return Dto::fromArray($response->getData());`.
+- Objeto único: `return $this->item($response, Dto::class);` (valida o formato; nunca `Dto::fromArray($response->getData())`). Objeto dentro de uma chave: `$this->item($response, Dto::class, 'transfer')`.
 - Endpoint que só existe em sandbox: sufixo `Dev` no nome (ex: `markAsPaidDev`) e aviso no docblock.
 - Recurso novo: registre a propriedade e o método acessor em `src/WebPag.php` (o acessor é necessário para a Facade) e o `@method` em `src/Laravel/Facades/WebPag.php`.
 
@@ -28,7 +28,9 @@ Siga "DTOs de resposta" e "Unidades monetárias" do `CLAUDE.md`: casts explícit
 - [ ] Nenhum ID concatenado no caminho.
 - [ ] Nada sensível em log, mensagem de exceção ou `toArray()` de resposta.
 - [ ] Método não idempotente (cobra, estorna, transfere)? O `HttpClient` já não repete: **não** crie retry próprio.
-- [ ] Dado de cartão ou token no request? Então `__debugInfo()` mascarado + teste em `SecurityTest`.
+- [ ] Dado de cartão, senha ou token no request? Então `__debugInfo()` mascarado + teste em `SecurityTest`.
+- [ ] Listas aninhadas no DTO de resposta passam por `ArrayHelper::onlyArrays()`.
+- [ ] Teste com resposta malformada (`data` string/null) esperando `ApiException`, em `VulnerabilityTest`.
 
 ## 5. Testes
 - Resource: mock do `HttpClient` com `->with('api/caminho/esperado', [...])`, validando URI e payload.

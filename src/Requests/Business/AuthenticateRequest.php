@@ -24,6 +24,19 @@ class AuthenticateRequest implements RequestPayload
     }
 
     /**
+     * Evita que var_dump/print_r/dd exponham a senha.
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo()
+    {
+        return [
+            'email' => $this->email,
+            'password' => $this->password !== null && $this->password !== '' ? '********' : $this->password,
+        ];
+    }
+
+    /**
      * Cria uma instância a partir de um array associativo.
      *
      * @param array<string, mixed> $data

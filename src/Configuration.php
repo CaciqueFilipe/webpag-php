@@ -3,6 +3,7 @@
 namespace WebPag;
 
 use InvalidArgumentException;
+use WebPag\Exceptions\WebPagException;
 use WebPag\Support\SensitiveData;
 
 class Configuration
@@ -31,6 +32,11 @@ class Configuration
     public function __construct($apiToken, $baseUrl = null, $timeout = 30)
     {
         $this->apiToken = (string) $apiToken;
+
+        // O token vai num header HTTP: caracteres de controle permitiriam injetar headers
+        if (preg_match('/[\x00-\x1F\x7F]/', $this->apiToken)) {
+            throw new InvalidArgumentException('O token da API WebPag contém caracteres inválidos (quebra de linha ou controle).');
+        }
         $this->baseUrl = self::normalizeBaseUrl($baseUrl !== null ? $baseUrl : self::DEFAULT_BASE_URL);
         $this->timeout = self::normalizeTimeout($timeout);
     }
@@ -71,6 +77,60 @@ class Configuration
             'baseUrl' => $this->baseUrl,
             'timeout' => $this->timeout,
         ];
+    }
+
+    /**
+     * Bloqueia serialize(): o token iria em texto puro para fila/cache/sessão.
+     * Em Jobs do Laravel, resolva o WebPag dentro do handle(), e não no construtor.
+     *
+     * @return array<int, string>
+     */
+    public function __sleep()
+    {
+        throw self::serializationError();
+    }
+
+    /**
+     * Bloqueia unserialize(): um objeto forjado pularia a validação de URL/token do construtor.
+     *
+     * @return void
+     */
+    public function __wakeup()
+    {
+        throw self::serializationError();
+    }
+
+    /**
+     * PHP 7.4+ (tem precedência sobre __sleep).
+     *
+     * @return array<string, mixed>
+     */
+    public function __serialize(): array
+    {
+        throw self::serializationError();
+    }
+
+    /**
+     * PHP 7.4+ (tem precedência sobre __wakeup).
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return void
+     */
+    public function __unserialize(array $data): void
+    {
+        throw self::serializationError();
+    }
+
+    /**
+     * @return WebPagException
+     */
+    public static function serializationError()
+    {
+        return new WebPagException(
+            'Objetos com o token da API WebPag não podem ser serializados. '
+            . 'Crie ou resolva a instância onde ela for usada (ex: no handle() do Job).'
+        );
     }
 
     /**

@@ -6,6 +6,12 @@ use WebPag\Exceptions\WebPagException;
 
 class WebhookParser
 {
+    /** Tamanho máximo aceito para o corpo do webhook (um evento real tem poucos KB). */
+    public const MAX_PAYLOAD_BYTES = 1048576; // 1 MB
+
+    /** Profundidade máxima do JSON (eventos reais têm menos de 10 níveis). */
+    private const MAX_JSON_DEPTH = 64;
+
     /**
      * Interpreta o payload recebido via webhook da WebPag.
      *
@@ -18,7 +24,11 @@ class WebhookParser
     public function parse($payload)
     {
         if (is_string($payload)) {
-            $decoded = json_decode($payload, true);
+            if (strlen($payload) > self::MAX_PAYLOAD_BYTES) {
+                throw new WebPagException('Payload de webhook inválido: maior que o limite permitido.');
+            }
+
+            $decoded = json_decode($payload, true, self::MAX_JSON_DEPTH);
 
             if (! is_array($decoded)) {
                 throw new WebPagException('Payload de webhook inválido: JSON malformado.');
@@ -58,7 +68,7 @@ class WebhookParser
             return false;
         }
 
-        if ($apiToken === '' || $rawPayload === '') {
+        if ($apiToken === '' || $rawPayload === '' || strlen($rawPayload) > self::MAX_PAYLOAD_BYTES) {
             return false;
         }
 

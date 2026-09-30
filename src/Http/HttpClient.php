@@ -2,14 +2,17 @@
 
 namespace WebPag\Http;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use Psr\Http\Message\ResponseInterface;
+use InvalidArgumentException;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use WebPag\Configuration;
 use WebPag\Exceptions\ApiException;
+use WebPag\Http\Transport\CurlTransport;
+use WebPag\Http\Transport\GuzzleTransport;
+use WebPag\Http\Transport\TransportException;
+use WebPag\Http\Transport\TransportInterface;
+use WebPag\Http\Transport\TransportResponse;
 
 class HttpClient
 {
@@ -32,31 +35,35 @@ class HttpClient
     /** @var Configuration */
     private $config;
 
-    /** @var Client */
-    private $client;
+    /** @var TransportInterface */
+    private $transport;
 
     /** @var int */
     private $maxRetries;
 
     /**
-     * @param Configuration        $config
-     * @param Client|null          $client
-     * @param LoggerInterface|null $logger
-     * @param int                  $maxRetries Número máximo de retentativas em caso de falha
+     * @param Configuration                                        $config
+     * @param TransportInterface|\GuzzleHttp\ClientInterface|null $transport Padrão: CurlTransport (ext-curl).
+     *                                                                       Um Client do Guzzle do seu projeto também é aceito.
+     * @param LoggerInterface|null                                 $logger
+     * @param int                                                  $maxRetries Número máximo de retentativas em caso de falha
+     *
+     * @throws InvalidArgumentException Se $transport não for de um tipo suportado
      */
-    public function __construct(Configuration $config, ?Client $client = null, ?LoggerInterface $logger = null, $maxRetries = self::DEFAULT_MAX_RETRIES)
+    public function __construct(Configuration $config, $transport = null, ?LoggerInterface $logger = null, $maxRetries = self::DEFAULT_MAX_RETRIES)
     {
         $this->config = $config;
-        $this->client = $client !== null ? $client : new Client([
-            'base_uri' => $config->getBaseUrl() . '/',
-            'timeout' => $config->getTimeout(),
-            'connect_timeout' => min(self::DEFAULT_CONNECT_TIMEOUT, $config->getTimeout()),
-            'http_errors' => false,
-            'verify' => true,
-            'allow_redirects' => false,
-        ]);
+        $this->transport = self::resolveTransport($config, $transport);
         $this->setLogger($logger !== null ? $logger : new NullLogger());
         $this->maxRetries = max(0, (int) $maxRetries);
+    }
+
+    /**
+     * @return TransportInterface
+     */
+    public function getTransport()
+    {
+        return $this->transport;
     }
 
     /**
@@ -78,14 +85,10 @@ class HttpClient
             'Accept' => 'application/json',
         ], isset($options['headers']) ? $options['headers'] : []);
 
-        // O token vai em header próprio ("auth-token"), que o Guzzle NÃO remove ao seguir
-        // redirecionamentos para outro host. Por isso redirects ficam sempre desligados,
-        // mesmo quando um Client customizado é injetado.
-        $options['allow_redirects'] = false;
-
-        // Status >= 400 é tratado abaixo (ApiException com status e corpo). Sem isto, um Client
-        // customizado lançaria exceção do Guzzle e o erro HTTP seria confundido com falha de rede.
-        $options['http_errors'] = false;
+        // Redirects desligados e http_errors => false são garantidos pelos transportes
+        // (o auth-token nunca pode seguir um redirect para outro host).
+        $options['timeout'] = $this->config->getTimeout();
+        $options['connect_timeout'] = min(self::DEFAULT_CONNECT_TIMEOUT, $this->config->getTimeout());
 
         // Nunca registrar valores da query: filtros podem conter CPF/CNPJ, e-mail etc. (LGPD).
         $this->logger->info('WebPag API request', [
@@ -101,9 +104,9 @@ class HttpClient
         for ($attempt = 1; $attempt <= $attempts; $attempt++) {
             try {
                 $startTime = microtime(true);
-                $response = $this->client->request($method, ltrim($uri, '/'), $options);
+                $response = $this->transport->send($method, ltrim($uri, '/'), $options);
                 $elapsed = (microtime(true) - $startTime) * 1000;
-            } catch (GuzzleException $e) {
+            } catch (TransportException $e) {
                 $this->logger->error('WebPag API communication error', [
                     'uri' => $uri,
                     'method' => $method,
@@ -153,7 +156,7 @@ class HttpClient
                 ]);
             }
 
-            $apiResponse = ApiResponse::fromResponse($response);
+            $apiResponse = ApiResponse::fromRaw($response->getBody(), $response->getStatusCode());
             $status = $response->getStatusCode();
 
             if ($status < 400) {
@@ -208,8 +211,34 @@ class HttpClient
     {
         return [
             'config' => $this->config,
+            'transport' => $this->transport,
             'maxRetries' => $this->maxRetries,
         ];
+    }
+
+    /**
+     * @param Configuration $config
+     * @param mixed         $transport
+     *
+     * @return TransportInterface
+     */
+    private static function resolveTransport(Configuration $config, $transport)
+    {
+        if ($transport === null) {
+            return new CurlTransport($config->getBaseUrl());
+        }
+
+        if ($transport instanceof TransportInterface) {
+            return $transport;
+        }
+
+        if (interface_exists('GuzzleHttp\ClientInterface') && $transport instanceof \GuzzleHttp\ClientInterface) {
+            return new GuzzleTransport($transport);
+        }
+
+        throw new InvalidArgumentException(
+            'Transporte inválido: use um WebPag\Http\Transport\TransportInterface, um GuzzleHttp\ClientInterface ou null.'
+        );
     }
 
     /**
@@ -232,7 +261,7 @@ class HttpClient
 
     /**
      * @param int                    $attempt
-     * @param ResponseInterface|null $response
+     * @param TransportResponse|null $response
      * @param string                 $uri
      *
      * @return void

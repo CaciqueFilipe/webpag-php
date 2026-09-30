@@ -40,7 +40,7 @@ class Installments extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return InstallmentPlan::fromArray($response->getData());
+        return $this->item($response, InstallmentPlan::class);
     }
 
     /**
@@ -54,7 +54,7 @@ class Installments extends AbstractResource
     {
         $response = $this->http->get($this->path('api/installments/%s', $installmentPlanId));
 
-        return InstallmentPlan::fromArray($response->getData());
+        return $this->item($response, InstallmentPlan::class);
     }
 
     /**
@@ -68,7 +68,7 @@ class Installments extends AbstractResource
     {
         $response = $this->http->post($this->path('api/installments/%s/cancel', $installmentPlanId));
 
-        return InstallmentPlan::fromArray($response->getData());
+        return $this->item($response, InstallmentPlan::class);
     }
 
 }

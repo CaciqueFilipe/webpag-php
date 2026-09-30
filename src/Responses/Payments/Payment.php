@@ -4,6 +4,7 @@ namespace WebPag\Responses\Payments;
 
 use WebPag\Responses\Payers\Payer;
 use WebPag\Contracts\ResponsePayload;
+use WebPag\Support\ArrayHelper;
 use WebPag\Responses\Business\Business;
 
 class Payment implements ResponsePayload
@@ -281,6 +282,6 @@ class Payment implements ResponsePayload
     {
         return array_map(function ($data) {
             return static::fromArray($data);
-        }, $collection);
+        }, ArrayHelper::onlyArrays($collection));
     }
 }

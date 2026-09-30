@@ -25,7 +25,7 @@ class Business extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return Authentication::fromArray($response->getData());
+        return $this->item($response, Authentication::class);
     }
 
     /**
@@ -37,7 +37,7 @@ class Business extends AbstractResource
     {
         $response = $this->http->get('api/me');
 
-        return BusinessResponse::fromArray($response->getData());
+        return $this->item($response, BusinessResponse::class);
     }
 
     /**
@@ -49,7 +49,7 @@ class Business extends AbstractResource
     {
         $response = $this->http->get('api/card-token/public-key');
 
-        return CardToken::fromArray($response->getData());
+        return $this->item($response, CardToken::class);
     }
 
     /**
@@ -66,7 +66,7 @@ class Business extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return Franchise::fromArray($response->getData());
+        return $this->item($response, Franchise::class);
     }
 
 }

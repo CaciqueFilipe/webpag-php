@@ -26,6 +26,24 @@ final class SensitiveData
     }
 
     /**
+     * Remove de um texto livre (mensagens de erro de rede) as query strings e credenciais de URLs.
+     *
+     * "... for https://api/x?cpf_cnpj=123" → "... for https://api/x?[query omitida]"
+     * "http://user:pass@proxy:3128"        → "http://****@proxy:3128"
+     *
+     * @param string $text
+     *
+     * @return string
+     */
+    public static function redactUrls($text)
+    {
+        $text = (string) $text;
+        $text = preg_replace('~\b([a-z][a-z0-9+.-]*://)[^\s/@"\'<>]+@~i', '$1****@', $text);
+
+        return preg_replace('~\b([a-z][a-z0-9+.-]*://[^\s?#"\'<>]+)\?[^\s#"\'<>]*~i', '$1?[query omitida]', $text);
+    }
+
+    /**
      * Mascara número de cartão (PAN) mantendo só os 4 últimos dígitos.
      *
      * @param string|null $number
