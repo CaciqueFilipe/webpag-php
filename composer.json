@@ -18,17 +18,18 @@
         }
     ],
     "require": {
-        "php": ">=7.2.5",
+        "php": ">=7.2",
+        "ext-curl": "*",
         "ext-json": "*",
-        "guzzlehttp/guzzle": "^7.15.2",
-        "guzzlehttp/psr7": "^2.12.3",
         "psr/log": "^1.0|^2.0|^3.0"
     },
     "require-dev": {
+        "guzzlehttp/guzzle": "^7.4.5",
         "phpunit/phpunit": "^8.5.40|^9.6.21",
         "friendsofphp/php-cs-fixer": "^2.19"
     },
     "suggest": {
+        "guzzlehttp/guzzle": "Opcional: permite injetar um Client do Guzzle já usado no projeto (recomendado ^7.15.2). Por padrão o SDK usa ext-curl.",
         "illuminate/support": "Necessário para usar o Service Provider Laravel (^5.8|^6.0|^7.0|^8.0|^9.0|^10.0|^11.0|^12.0)",
         "monolog/monolog": "Recomendado para logging PSR-3 integrado no HttpClient"
     },

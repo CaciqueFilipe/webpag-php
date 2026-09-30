@@ -42,7 +42,7 @@ class Payments extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return Payment::fromArray($response->getData());
+        return $this->item($response, Payment::class);
     }
 
     /**
@@ -56,7 +56,7 @@ class Payments extends AbstractResource
     {
         $response = $this->http->get($this->path('api/payments/%s', $paymentId));
 
-        return Payment::fromArray($response->getData());
+        return $this->item($response, Payment::class);
     }
 
     /**
@@ -70,7 +70,7 @@ class Payments extends AbstractResource
     {
         $response = $this->http->delete($this->path('api/payments/%s', $paymentId));
 
-        return Payment::fromArray($response->getData());
+        return $this->item($response, Payment::class);
     }
 
     /**
@@ -88,7 +88,7 @@ class Payments extends AbstractResource
             $this->resolvePayload($request !== null ? $request : [])
         );
 
-        return Refund::fromArray($response->getData());
+        return $this->item($response, Refund::class);
     }
 
     /**
@@ -102,7 +102,7 @@ class Payments extends AbstractResource
     {
         $response = $this->http->get($this->path('api/payments/refunds/%s', $refundId));
 
-        return Refund::fromArray($response->getData());
+        return $this->item($response, Refund::class);
     }
 
     /**
@@ -118,7 +118,7 @@ class Payments extends AbstractResource
             $this->path('api/payments/%s/mark-as-paid-dev', $paymentId)
         );
 
-        return Payment::fromArray($response->getData());
+        return $this->item($response, Payment::class);
     }
 
 }

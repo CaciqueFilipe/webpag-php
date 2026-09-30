@@ -3,6 +3,7 @@
 namespace WebPag\Responses\Transfers;
 
 use WebPag\Contracts\ResponsePayload;
+use WebPag\Support\ArrayHelper;
 
 class Transfer implements ResponsePayload
 {
@@ -129,6 +130,6 @@ class Transfer implements ResponsePayload
     {
         return array_map(function ($data) {
             return self::fromArray($data);
-        }, $collection);
+        }, ArrayHelper::onlyArrays($collection));
     }
 }

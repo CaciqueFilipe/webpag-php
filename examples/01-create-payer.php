@@ -47,6 +47,6 @@ try {
 
 } catch (\WebPag\Exceptions\ApiException $e) {
     echo "Erro ao criar pagador: " . $e->getErrorMessage() . PHP_EOL;
-    // O getResponseBody() contém os detalhes dos erros de validação
-    print_r($e->getResponseBody());
+    // Detalhes (ex: erros de validação): registre em log, não exiba ao usuário final (pode conter dados pessoais)
+    error_log('WebPag: ' . json_encode($e->getResponseBody()));
 }

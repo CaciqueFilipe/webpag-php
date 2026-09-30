@@ -24,7 +24,7 @@ class Recurrency extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return RecurrencyResponse::fromArray($response->getData());
+        return $this->item($response, RecurrencyResponse::class);
     }
 
     /**
@@ -59,7 +59,7 @@ class Recurrency extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return RecurrencyResponse::fromArray($response->getData());
+        return $this->item($response, RecurrencyResponse::class);
     }
 
     /**
@@ -75,7 +75,7 @@ class Recurrency extends AbstractResource
             $this->path('api/payments/recurrency/%s/cancel', $recurrenceCode)
         );
 
-        return RecurrencyResponse::fromArray($response->getData());
+        return $this->item($response, RecurrencyResponse::class);
     }
 
 }

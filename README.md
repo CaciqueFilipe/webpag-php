@@ -5,7 +5,7 @@
 [![License](https://poser.pugx.org/filipecacique/webpag-php/license)](https://packagist.org/packages/filipecacique/webpag-php)
 [![PHP Version Require](https://poser.pugx.org/filipecacique/webpag-php/require/php)](https://packagist.org/packages/filipecacique/webpag-php)
 
-SDK PHP para integração com a [API WebPag](https://api.webpag.com.br/docs). Compatível com **PHP puro (7.2.5+)** e **Laravel (5.8+)** — o Laravel é opcional.
+SDK PHP para integração com a [API WebPag](https://api.webpag.com.br/docs). Compatível com **PHP puro (7.2+)** e **Laravel (5.8+)** — o Laravel é opcional.
 
 ## Instalação
 
@@ -15,7 +15,7 @@ composer require filipecacique/webpag-php
 
 > Confira o nome do pacote: `filipecacique/webpag-php`. Pacotes com nomes parecidos não são deste projeto.
 
-A dependência principal é apenas o **Guzzle 7.15.2+**. Versões anteriores, incluindo toda a série 6.x, têm vulnerabilidades conhecidas e não são aceitas. O suporte a Laravel (`Service Provider` e `Facade`) é carregado automaticamente só quando o pacote é instalado em um projeto Laravel — em PHP puro, nada disso é necessário.
+As requisições usam a extensão nativa **`ext-curl`**. A única dependência é o `psr/log` (só interfaces), então o SDK **não conflita com a versão de Guzzle, promises ou PSR-7 do seu projeto**. Se você já usa Guzzle e quer reaproveitar um `Client`, veja [Transporte HTTP](#transporte-http). O suporte a Laravel (`Service Provider` e `Facade`) é carregado automaticamente só quando o pacote é instalado em um projeto Laravel — em PHP puro, nada disso é necessário.
 
 ## Configuração
 
@@ -130,6 +130,8 @@ class PaymentController extends Controller
 | Webhooks | `$webpag->webhooks` | parse |
 
 ## Exemplos de uso
+
+Scripts completos (pagador, PIX, cartão, link de pagamento, listagem paginada e webhook) ficam na pasta [`examples/`](https://github.com/CaciqueFilipe/webpag-php/tree/main/examples) do repositório. Eles não são instalados pelo Composer.
 
 ### Processar pagamento via PIX
 
@@ -317,6 +319,31 @@ Para casos onde você precise de acesso ao objeto de resposta HTTP completo (sta
 O `HttpClient` interno retorna um objeto `WebPag\Http\ApiResponse` que oferece métodos como `getStatusCode()`, `getData()`, `toArray()`, e acesso `ArrayAccess` ao corpo da resposta.
 
 
+## Transporte HTTP
+
+Por padrão o SDK usa o `CurlTransport` (ext-curl) e não precisa de nenhuma configuração. Opções avançadas:
+
+```php
+use WebPag\Configuration;
+use WebPag\Http\HttpClient;
+use WebPag\Http\Transport\CurlTransport;
+use WebPag\WebPag;
+
+$config = new Configuration(getenv('WEBPAG_API_TOKEN'));
+
+// Proxy corporativo explícito e/ou bundle de CAs próprio
+$transport = new CurlTransport($config->getBaseUrl(), [
+    'proxy' => 'http://proxy.interno:3128',
+    'ca_bundle' => '/etc/ssl/certs/ca-certificates.crt',
+]);
+
+$webpag = new WebPag($config, new HttpClient($config, $transport));
+```
+
+Para reaproveitar um `Client` do **Guzzle** do seu projeto (6.5+ ou 7.x), passe-o no lugar do transporte: `new HttpClient($config, $guzzleClient)`. Redirects e `http_errors` continuam desligados à força. Nesse caso vale o Guzzle instalado no seu projeto, então mantenha-o atualizado (recomendado **7.15.2+**, que corrige CVEs de cookies, redirect e proxy).
+
+> **Windows / PHP sem CA configurado:** se aparecer `cURL 60` (certificado), configure `curl.cainfo` no `php.ini` ou use a opção `ca_bundle`. **Nunca desative a verificação TLS.**
+
 ## Segurança
 
 O SDK já vem com estas proteções ativas:
@@ -325,20 +352,33 @@ O SDK já vem com estas proteções ativas:
 |----------|---------------|
 | HTTPS obrigatório | `base_url` com `http://` gera `InvalidArgumentException` (exceto `localhost`/`127.0.0.1`), para que o token nunca trafegue sem criptografia |
 | Sem redirecionamentos | Redirects nunca são seguidos, porque o header `auth-token` iria junto para outro host |
-| TLS verificado | O certificado do servidor é sempre validado (`verify => true`) |
+| TLS verificado | Certificado e hostname sempre validados (`CURLOPT_SSL_VERIFYPEER` / `VERIFYHOST = 2`) |
+| Sem proxy implícito | Variáveis `http_proxy`/`HTTPS_PROXY`/`ALL_PROXY` são ignoradas. Proxy só se configurado explicitamente |
+| Só HTTP/HTTPS | O cURL fica restrito a esses protocolos (sem `file://`, `ftp://`, `gopher://`...) |
+| Sem injeção de header | Token e headers com quebra de linha ou caracteres de controle são recusados |
+| TLS 1.2+ | Conexões com SSLv3/TLS 1.0/1.1 são recusadas, mesmo em servidores com OpenSSL antigo |
+| Limite de resposta | Corpo acima de 10 MB ou headers acima de 64 KB interrompem a conexão (evita esgotar a memória) |
+| Resposta malformada | Um `data` inesperado da API (string, `null`, lista) gera `ApiException`, e não `TypeError` fatal. Itens inválidos em listas aninhadas são ignorados |
+| Erros sem dados pessoais | Mensagens de falha de rede têm query strings e credenciais de URL removidas (`?[query omitida]`), inclusive com Guzzle injetado |
+| Sem serialização do token | `serialize()`/`unserialize()` de `Configuration`, `Environment` e `WebPag` lançam `WebPagException`: o token nunca vai para fila/cache/sessão, e objetos forjados não pulam a validação |
 | Retry sem duplicar operações | `POST`/`PUT`/`DELETE` (cobrança, estorno, saque) **não** são repetidos após erro 5xx ou falha de rede; só após `429`. `GET` é repetido com backoff |
 | IDs validados | IDs de caminho são validados e codificados (`rawurlencode`), bloqueando path traversal como `"1/../../transfers"` |
 | Logs sem dados pessoais | O logger PSR-3 recebe só os **nomes** dos filtros, nunca os valores (CPF, e-mail...) nem o token |
 | Debug mascarado | `var_dump`/`print_r`/`dd` mostram token e cartão mascarados (`****cdef`, `************1111`) |
-| Webhook | `verifySignature` usa comparação em tempo constante e recusa token vazio ou assinatura malformada |
+| Webhook | `verifySignature` usa comparação em tempo constante, recusa token vazio, assinatura malformada e corpo acima de 1 MB |
+| Senha e cartão mascarados | `AuthenticateRequest`, `CreditCardData` e `SaveCreditCardRequest` escondem senha, número e CVV em debug |
 
 ### Boas práticas para quem integra
 
 - **Token:** guarde em variável de ambiente ou num cofre de segredos. Nunca versione e nunca envie ao frontend. Se vazar, gere outro com a WebPag.
 - **Cartão:** prefira `card_token` (tokenização no frontend com `business->cardTokenPublicKey()`). Enviar número e CVV pelo seu servidor coloca a sua aplicação no escopo PCI-DSS.
 - **Falha de rede em POST:** se `process()`, `create()` ou `refund()` lançar erro de comunicação, **consulte** o recurso (ex: por `order_id`) antes de tentar de novo, para não duplicar a operação.
-- **Webhooks:** use `parseVerified()`, responda rápido e trate eventos repetidos (idempotência pelo ID).
-- **Erros:** `ApiException::getResponseBody()` e `getErrorTrace()` podem conter dados pessoais e detalhes internos. Registre nos seus logs, mas não exiba ao usuário final.
+- **Webhooks:** use `parseVerified()`, responda rápido e trate eventos repetidos. A assinatura não tem carimbo de tempo, então um evento válido capturado pode ser **reenviado** (replay). Guarde os IDs já processados e, antes de liberar algo de valor, confirme o status com `find()`.
+- **Filtros vindos do usuário:** não repasse `$request->all()` direto para `list()`/`create()`. Um array cru permite injetar qualquer parâmetro na chamada à API. Use os DTOs de `WebPag\Requests\*`, que só enviam os campos conhecidos, ou monte o array só com as chaves esperadas.
+- **Erros:** `ApiException::getResponseBody()` e `getErrorTrace()` podem conter dados pessoais e detalhes internos. Registre nos seus logs, mas não exiba ao usuário final. Em produção, use `APP_DEBUG=false` (Laravel) e `display_errors=Off`.
+- **Stack traces:** no PHP 7.2 e 7.3, `zend.exception_ignore_args` vem desligado, e os traces podem incluir argumentos das funções (como o token passado para `WebPag::create()`). Em produção, ative `zend.exception_ignore_args=On` e evite coletar argumentos em ferramentas de erro.
+- **Jobs/filas:** não injete o `WebPag` no construtor de um Job serializável; resolva-o dentro do `handle()`. Isso evita a `WebPagException` de serialização.
+- **Dependências:** rode `composer audit` no seu projeto. Se injetar um Client do Guzzle, mantenha-o em 7.15.2+.
 
 ## Desenvolvimento
 

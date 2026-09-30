@@ -40,7 +40,7 @@ class PaymentLinks extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return PaymentLink::fromArray($response->getData());
+        return $this->item($response, PaymentLink::class);
     }
 
 }
