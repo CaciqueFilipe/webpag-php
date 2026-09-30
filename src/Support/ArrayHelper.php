@@ -19,6 +19,21 @@ final class ArrayHelper
     }
 
     /**
+     * Mantém só os itens que são arrays (objetos JSON), reindexando.
+     *
+     * Protege os DTOs contra listas malformadas vindas da API ou de webhooks, como
+     * "transactions": [1, "x", null], que causariam TypeError em fromArray().
+     *
+     * @param array<mixed> $items
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function onlyArrays(array $items)
+    {
+        return array_values(array_filter($items, 'is_array'));
+    }
+
+    /**
      * @param array<string, mixed> $data
      *
      * @return array<string, mixed>

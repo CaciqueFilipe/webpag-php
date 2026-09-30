@@ -41,7 +41,7 @@ class Payers extends AbstractResource
     {
         $response = $this->http->get($this->path('api/payers/%s', $payerId));
 
-        return Payer::fromArray($response->getData());
+        return $this->item($response, Payer::class);
     }
 
     /**
@@ -58,7 +58,7 @@ class Payers extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return Payer::fromArray($response->getData());
+        return $this->item($response, Payer::class);
     }
 
     /**
@@ -76,7 +76,7 @@ class Payers extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return Payer::fromArray($response->getData());
+        return $this->item($response, Payer::class);
     }
 
     /**
@@ -90,7 +90,7 @@ class Payers extends AbstractResource
     {
         $response = $this->http->put($this->path('api/payers/%s/inactivate', $payerId));
 
-        return Payer::fromArray($response->getData());
+        return $this->item($response, Payer::class);
     }
 
     /**
@@ -108,7 +108,7 @@ class Payers extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return CreditCard::fromArray($response->getData());
+        return $this->item($response, CreditCard::class);
     }
 
     /**

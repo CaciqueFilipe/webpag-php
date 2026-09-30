@@ -125,6 +125,42 @@ class Environment
     }
 
     /**
+     * Bloqueia serialize()/unserialize(): contém o token (ver Configuration::__sleep).
+     *
+     * @return array<int, string>
+     */
+    public function __sleep()
+    {
+        throw Configuration::serializationError();
+    }
+
+    /**
+     * @return void
+     */
+    public function __wakeup()
+    {
+        throw Configuration::serializationError();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function __serialize(): array
+    {
+        throw Configuration::serializationError();
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return void
+     */
+    public function __unserialize(array $data): void
+    {
+        throw Configuration::serializationError();
+    }
+
+    /**
      * Converte esta Environment para uma Configuration.
      *
      * @return Configuration

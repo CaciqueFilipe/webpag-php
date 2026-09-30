@@ -4,6 +4,7 @@ namespace WebPag\Resources;
 
 use InvalidArgumentException;
 use WebPag\Contracts\RequestPayload;
+use WebPag\Exceptions\ApiException;
 use WebPag\Http\ApiResponse;
 use WebPag\Http\HttpClient;
 use WebPag\Responses\Pagination\PaginatedCollection;
@@ -27,6 +28,8 @@ abstract class AbstractResource
      * @param RequestPayload|array<string, mixed>|null $payload
      *
      * @return array<string, mixed>
+     *
+     * @throws InvalidArgumentException Para qualquer outro tipo (ex: query string crua)
      */
     protected function resolvePayload($payload)
     {
@@ -35,10 +38,47 @@ abstract class AbstractResource
         }
 
         if ($payload instanceof RequestPayload) {
-            return $payload->toArray();
+            $payload = $payload->toArray();
+        }
+
+        if (! is_array($payload)) {
+            throw new InvalidArgumentException('Payload inválido: use um DTO de Requests\* ou um array associativo.');
         }
 
         return $payload;
+    }
+
+    /**
+     * Converte a resposta de um objeto único em DTO, validando o formato antes.
+     *
+     * Sem esta checagem, um "data" inesperado (string, null, lista) causaria TypeError fatal,
+     * que escapa do catch (WebPagException) da aplicação.
+     *
+     * @param ApiResponse $response
+     * @param string      $dtoClass Classe que implementa ResponsePayload
+     * @param string|null $key      Chave dentro de "data" onde está o objeto (ex: "transfer")
+     *
+     * @return mixed Instância de $dtoClass
+     *
+     * @throws ApiException Se a resposta não trouxer um objeto
+     */
+    protected function item(ApiResponse $response, $dtoClass, $key = null)
+    {
+        $data = $response->getData();
+
+        if ($key !== null && is_array($data) && array_key_exists($key, $data)) {
+            $data = $data[$key];
+        }
+
+        if (! is_array($data) || ($data !== [] && array_keys($data) === range(0, count($data) - 1))) {
+            throw new ApiException(
+                'Resposta inesperada da API WebPag: era esperado um objeto.',
+                $response->getStatusCode(),
+                $response->toArray()
+            );
+        }
+
+        return $dtoClass::fromArray($data);
     }
 
     /**

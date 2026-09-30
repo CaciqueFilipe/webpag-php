@@ -29,5 +29,6 @@ try {
     echo "PIX Copia e Cola: " . ($payment->pixCode ?? 'N/A') . PHP_EOL;
 } catch (\WebPag\Exceptions\ApiException $e) {
     echo "Erro ao criar link de pagamento: " . $e->getErrorMessage() . PHP_EOL;
-    print_r($e->getResponseBody());
+    // Detalhes (ex: erros de validação): registre em log, não exiba ao usuário final (pode conter dados pessoais)
+    error_log('WebPag: ' . json_encode($e->getResponseBody()));
 }

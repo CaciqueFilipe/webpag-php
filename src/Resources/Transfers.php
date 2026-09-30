@@ -35,7 +35,7 @@ class Transfers extends AbstractResource
     {
         $response = $this->http->post('api/transfers', $this->resolvePayload($request));
 
-        return Transfer::fromArray($response->getData());
+        return $this->item($response, Transfer::class);
     }
 
     /**
@@ -49,7 +49,7 @@ class Transfers extends AbstractResource
     {
         $response = $this->http->get($this->path('api/transfers/%s', $transferId));
 
-        return Transfer::fromArray($response->getData());
+        return $this->item($response, Transfer::class);
     }
 
     /**
@@ -62,13 +62,9 @@ class Transfers extends AbstractResource
     public function cancel($transferId): Transfer
     {
         $response = $this->http->delete($this->path('api/transfers/%s', $transferId));
-        $data = $response->getData();
 
         // O endpoint de cancelamento retorna { "message": "...", "transfer": { ... } }
-        // Extraímos o objeto "transfer" para criar o DTO.
-        $transferData = $data['transfer'] ?? $data;
-
-        return Transfer::fromArray($transferData);
+        return $this->item($response, Transfer::class, 'transfer');
     }
 
     /**
@@ -86,7 +82,7 @@ class Transfers extends AbstractResource
             $this->resolvePayload($request)
         );
 
-        return Transfer::fromArray($response->getData());
+        return $this->item($response, Transfer::class);
     }
 
 }

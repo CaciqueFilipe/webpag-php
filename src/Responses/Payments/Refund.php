@@ -3,6 +3,7 @@
 namespace WebPag\Responses\Payments;
 
 use WebPag\Contracts\ResponsePayload;
+use WebPag\Support\ArrayHelper;
 
 class Refund implements ResponsePayload
 {
@@ -123,6 +124,6 @@ class Refund implements ResponsePayload
     {
         return array_map(function ($data) {
             return self::fromArray($data);
-        }, $collection);
+        }, ArrayHelper::onlyArrays($collection));
     }
 }

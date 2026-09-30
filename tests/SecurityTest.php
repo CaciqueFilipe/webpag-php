@@ -18,6 +18,9 @@ use WebPag\Exceptions\ApiException;
 use WebPag\Exceptions\WebPagException;
 use WebPag\Http\ApiResponse;
 use WebPag\Http\HttpClient;
+use WebPag\Http\Transport\CurlTransport;
+use WebPag\Http\Transport\GuzzleTransport;
+use WebPag\Http\Transport\TransportException;
 use WebPag\Requests\Payers\SaveCreditCardRequest;
 use WebPag\Requests\Payments\CreditCardData;
 use WebPag\Requests\Payments\ProcessPaymentRequest;
@@ -86,6 +89,13 @@ class SecurityTest extends TestCase
         $this->assertSame('http://localhost:8080', (new Configuration(self::TOKEN, 'http://localhost:8080/'))->getBaseUrl());
         $this->assertSame('http://127.0.0.1', (new Configuration(self::TOKEN, 'http://127.0.0.1'))->getBaseUrl());
         $this->assertSame('https://sandbox.example.com/v1', (new Configuration(self::TOKEN, 'https://sandbox.example.com/v1/'))->getBaseUrl());
+    }
+
+    public function testRejectsTokenWithControlCharacters()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new Configuration("tok_live_123\r\nX-Injected: 1");
     }
 
     public function testRejectsInvalidTimeout()
@@ -209,7 +219,9 @@ class SecurityTest extends TestCase
             $this->fail('Deveria lançar ApiException sem repetir o POST.');
         } catch (ApiException $e) {
             $this->assertStringContainsString('pode ter sido processada', $e->getMessage());
-            $this->assertInstanceOf(ConnectException::class, $e->getPrevious());
+            $this->assertInstanceOf(TransportException::class, $e->getPrevious());
+            $this->assertNull($e->getPrevious()->getPrevious(), 'exceção do Guzzle (com URL/query) não pode ficar encadeada');
+            $this->assertStringContainsString(ConnectException::class, $e->getMessage());
         }
 
         $this->assertCount(1, $this->history, 'Saque foi reenviado após erro de rede');
@@ -271,18 +283,19 @@ class SecurityTest extends TestCase
         $this->assertFalse($this->history[0]['options']['allow_redirects']);
     }
 
-    public function testDefaultClientDisablesRedirectsAndVerifiesTls()
+    public function testDefaultTransportIsCurlWithoutGuzzle()
     {
         $http = new HttpClient(new Configuration(self::TOKEN));
-        $guzzle = (new \ReflectionProperty(HttpClient::class, 'client'));
-        $guzzle->setAccessible(true);
-        /** @var Client $client */
-        $client = $guzzle->getValue($http);
 
-        $config = method_exists($client, 'getConfig') ? $client->getConfig() : [];
-        $this->assertFalse($config['allow_redirects']);
-        $this->assertTrue($config['verify']);
-        $this->assertSame(10, $config['connect_timeout']);
+        $this->assertInstanceOf(CurlTransport::class, $http->getTransport());
+        $this->assertInstanceOf(GuzzleTransport::class, $this->clientWith([])->getTransport());
+    }
+
+    public function testInvalidTransportIsRejected()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new HttpClient(new Configuration(self::TOKEN), new \stdClass());
     }
 
     public function testLogsNeverContainQueryValuesOrToken()

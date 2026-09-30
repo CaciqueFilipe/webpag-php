@@ -4,6 +4,7 @@ namespace WebPag\Responses\Installments;
 
 use WebPag\Contracts\ResponsePayload;
 use WebPag\Responses\Payers\Payer;
+use WebPag\Support\ArrayHelper;
 
 class InstallmentPlan implements ResponsePayload
 {
@@ -85,7 +86,7 @@ class InstallmentPlan implements ResponsePayload
         if (isset($data['installments']) && is_array($data['installments'])) {
             $instance->installments = array_map(function ($installmentData) {
                 return Installment::fromArray($installmentData);
-            }, $data['installments']);
+            }, ArrayHelper::onlyArrays($data['installments']));
         }
 
         return $instance;
@@ -99,7 +100,7 @@ class InstallmentPlan implements ResponsePayload
     {
         return array_map(function ($item) {
             return self::fromArray($item);
-        }, $data);
+        }, ArrayHelper::onlyArrays($data));
     }
 
     /**

@@ -5,6 +5,8 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+permissions:
+  contents: read
 
 jobs:
   phpunit-tests:
@@ -80,10 +82,28 @@ jobs:
       - name: Lint PHP files
         run: parallel-lint --exclude vendor .
 
+  dist-contents:
+    runs-on: ubuntu-latest
+    name: Package Contents (Packagist dist)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Only public files go to the dist package
+        run: |
+          # Gera o mesmo arquivo que o Packagist/GitHub entrega (respeita export-ignore do .gitattributes)
+          git archive --format=tar HEAD | tar -t | cut -d/ -f1 | sort -u > dist-root.txt
+          echo "Raiz do pacote distribuído:"; cat dist-root.txt
+          allowed='^(composer\.json|config|LICENSE|README\.md|src)$'
+          if grep -Ev "$allowed" dist-root.txt; then
+            echo "::error::Arquivos internos no pacote distribuído. Adicione-os ao .gitattributes (export-ignore)."
+            exit 1
+          fi
+
   ci-status:
     runs-on: ubuntu-latest
     name: CI Status Check
-    needs: [phpunit-tests, syntax-check]
+    needs: [phpunit-tests, syntax-check, dist-contents]
     steps:
       - name: All checks passed successfully
         run: echo "Build concluída com sucesso! Código pronto para merge."
