@@ -5,6 +5,7 @@ namespace WebPag\Resources;
 use WebPag\Http\ApiResponse;
 use WebPag\Responses\Payers\Payer;
 use WebPag\Responses\Card\CreditCard;
+use WebPag\Responses\Pagination\PaginatedCollection;
 use WebPag\Requests\Payers\ListPayerRequest;
 use WebPag\Requests\Payers\CreatePayerRequest;
 use WebPag\Requests\Payers\UpdatePayerRequest;
@@ -17,16 +18,16 @@ class Payers extends AbstractResource
      * 
      * @param ListPayerRequest|array<string, mixed>|null $filters
      *
-     * @return Payer[]
+     * @return PaginatedCollection|Payer[]
      */
-    public function list($filters = null): array
+    public function list($filters = null): PaginatedCollection
     {
         $response = $this->http->get(
             'api/payers',
             $this->resolvePayload($filters)
         );
 
-        return Payer::fromArrayCollection($response->getData());
+        return $this->paginate($response, Payer::class);
     }
 
     /**
@@ -38,7 +39,7 @@ class Payers extends AbstractResource
      */
     public function find($payerId): Payer
     {
-        $response = $this->http->get('api/payers/' . $payerId);
+        $response = $this->http->get($this->path('api/payers/%s', $payerId));
 
         return Payer::fromArray($response->getData());
     }
@@ -71,7 +72,7 @@ class Payers extends AbstractResource
     public function update($payerId, $request): Payer
     {
         $response = $this->http->put(
-            'api/payers/' . $payerId . '/update',
+            $this->path('api/payers/%s/update', $payerId),
             $this->resolvePayload($request)
         );
 
@@ -87,7 +88,7 @@ class Payers extends AbstractResource
      */
     public function inactivate($payerId): Payer
     {
-        $response = $this->http->put('api/payers/' . $payerId . '/inactivate');
+        $response = $this->http->put($this->path('api/payers/%s/inactivate', $payerId));
 
         return Payer::fromArray($response->getData());
     }
@@ -103,7 +104,7 @@ class Payers extends AbstractResource
     public function saveCreditCard($payerId, $request): CreditCard
     {
         $response = $this->http->post(
-            'api/payers/' . $payerId . '/creditcard',
+            $this->path('api/payers/%s/creditcard', $payerId),
             $this->resolvePayload($request)
         );
 
@@ -121,7 +122,7 @@ class Payers extends AbstractResource
     public function removeCreditCard($payerId, $cardId)
     {
         return $this->http->delete(
-            'api/payers/' . $payerId . '/creditcard/' . $cardId . '/remove'
+            $this->path('api/payers/%s/creditcard/%s/remove', $payerId, $cardId)
         );
     }
 

@@ -83,6 +83,7 @@ class ApiResponse implements ArrayAccess, JsonSerializable
      *
      * @return bool
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         return array_key_exists($offset, $this->body);
@@ -93,6 +94,7 @@ class ApiResponse implements ArrayAccess, JsonSerializable
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->body[$offset];
@@ -102,6 +104,7 @@ class ApiResponse implements ArrayAccess, JsonSerializable
      * @param mixed $offset
      * @param mixed $value
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         if ($offset === null) {
@@ -114,6 +117,7 @@ class ApiResponse implements ArrayAccess, JsonSerializable
     /**
      * @param mixed $offset
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         unset($this->body[$offset]);
@@ -122,6 +126,7 @@ class ApiResponse implements ArrayAccess, JsonSerializable
     /**
      * @return array<string, mixed>
      */
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->body;

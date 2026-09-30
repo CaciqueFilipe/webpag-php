@@ -4,6 +4,7 @@ namespace WebPag\Requests\Payments;
 
 use WebPag\Contracts\RequestPayload;
 use WebPag\Support\ArrayHelper;
+use WebPag\Support\SensitiveData;
 
 class CreditCardData implements RequestPayload
 {
@@ -34,6 +35,22 @@ class CreditCardData implements RequestPayload
             'expiration_year' => $this->expirationYear,
             'security_code' => $this->securityCode,
         ]);
+    }
+
+    /**
+     * Evita que var_dump/print_r/dd exponham número completo e CVV (PCI-DSS).
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo()
+    {
+        return [
+            'number' => SensitiveData::maskCardNumber($this->number),
+            'name' => $this->name,
+            'expirationMonth' => $this->expirationMonth,
+            'expirationYear' => $this->expirationYear,
+            'securityCode' => $this->securityCode !== null ? '***' : null,
+        ];
     }
 
     /**

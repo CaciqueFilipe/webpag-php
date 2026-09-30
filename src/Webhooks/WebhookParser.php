@@ -43,17 +43,58 @@ class WebhookParser
      * A WebPag envia o header "X-Webpag-Signature" com uma assinatura HMAC-SHA256
      * do payload bruto (corpo da requisição), usando o API token como chave.
      *
-     * @param string $rawPayload     Corpo bruto da requisição (JSON string)
-     * @param string $signature      Valor do header X-Webpag-Signature
-     * @param string $apiToken       Seu API token (usado como chave HMAC)
+     * Sempre retorna false (nunca lança) para entradas ausentes ou malformadas, e recusa
+     * token vazio: com chave vazia qualquer pessoa conseguiria forjar a assinatura.
+     *
+     * @param string      $rawPayload Corpo bruto da requisição (JSON string), sem re-serializar
+     * @param string|null $signature  Valor do header X-Webpag-Signature (null se ausente)
+     * @param string      $apiToken   Seu API token (usado como chave HMAC)
      *
      * @return bool
      */
     public static function verifySignature($rawPayload, $signature, $apiToken)
     {
+        if (! is_string($rawPayload) || ! is_string($signature) || ! is_string($apiToken)) {
+            return false;
+        }
+
+        if ($apiToken === '' || $rawPayload === '') {
+            return false;
+        }
+
+        $signature = strtolower(trim($signature));
+
+        // Assinatura HMAC-SHA256 em hexadecimal tem sempre 64 caracteres
+        if (strlen($signature) !== 64 || ! ctype_xdigit($signature)) {
+            return false;
+        }
+
         $expected = hash_hmac('sha256', $rawPayload, $apiToken);
 
         return hash_equals($expected, $signature);
+    }
+
+    /**
+     * Valida a assinatura e só então interpreta o payload.
+     *
+     * Use este método no endpoint que recebe webhooks: ele garante que nenhum evento
+     * não autenticado chegue à sua lógica de negócio.
+     *
+     * @param string      $rawPayload Corpo bruto da requisição
+     * @param string|null $signature  Valor do header X-Webpag-Signature
+     * @param string      $apiToken   Seu API token
+     *
+     * @return WebhookEvent
+     *
+     * @throws WebPagException Se a assinatura for inválida ou o payload malformado
+     */
+    public function parseVerified($rawPayload, $signature, $apiToken)
+    {
+        if (! self::verifySignature($rawPayload, $signature, $apiToken)) {
+            throw new WebPagException('Assinatura do webhook inválida.');
+        }
+
+        return $this->parse($rawPayload);
     }
 
     /**

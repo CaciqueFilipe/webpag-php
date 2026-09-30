@@ -4,6 +4,7 @@ namespace WebPag\Http;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -15,6 +16,18 @@ class HttpClient
     use LoggerAwareTrait;
 
     public const DEFAULT_MAX_RETRIES = 3;
+
+    /** Tempo máximo (s) para estabelecer a conexão, independente do timeout total. */
+    public const DEFAULT_CONNECT_TIMEOUT = 10;
+
+    /** Maior espera (s) aceita a partir do header Retry-After. */
+    public const MAX_RETRY_AFTER = 30;
+
+    /**
+     * Métodos que podem ser repetidos com segurança após falha de rede ou 5xx.
+     * POST/PUT/DELETE criam cobranças, estornos e saques: repetir pode duplicar a operação.
+     */
+    private const IDEMPOTENT_METHODS = ['GET', 'HEAD', 'OPTIONS'];
 
     /** @var Configuration */
     private $config;
@@ -31,16 +44,19 @@ class HttpClient
      * @param LoggerInterface|null $logger
      * @param int                  $maxRetries Número máximo de retentativas em caso de falha
      */
-    public function __construct(Configuration $config, Client $client = null, LoggerInterface $logger = null, $maxRetries = self::DEFAULT_MAX_RETRIES)
+    public function __construct(Configuration $config, ?Client $client = null, ?LoggerInterface $logger = null, $maxRetries = self::DEFAULT_MAX_RETRIES)
     {
         $this->config = $config;
         $this->client = $client !== null ? $client : new Client([
             'base_uri' => $config->getBaseUrl() . '/',
             'timeout' => $config->getTimeout(),
+            'connect_timeout' => min(self::DEFAULT_CONNECT_TIMEOUT, $config->getTimeout()),
             'http_errors' => false,
+            'verify' => true,
+            'allow_redirects' => false,
         ]);
         $this->setLogger($logger !== null ? $logger : new NullLogger());
-        $this->maxRetries = $maxRetries;
+        $this->maxRetries = max(0, (int) $maxRetries);
     }
 
     /**
@@ -54,20 +70,32 @@ class HttpClient
      */
     public function request($method, $uri, array $options = [])
     {
+        $method = strtoupper($method);
+
         $options['headers'] = array_merge([
             'auth-token' => $this->config->getApiToken(),
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ], isset($options['headers']) ? $options['headers'] : []);
 
+        // O token vai em header próprio ("auth-token"), que o Guzzle NÃO remove ao seguir
+        // redirecionamentos para outro host. Por isso redirects ficam sempre desligados,
+        // mesmo quando um Client customizado é injetado.
+        $options['allow_redirects'] = false;
+
+        // Status >= 400 é tratado abaixo (ApiException com status e corpo). Sem isto, um Client
+        // customizado lançaria exceção do Guzzle e o erro HTTP seria confundido com falha de rede.
+        $options['http_errors'] = false;
+
+        // Nunca registrar valores da query: filtros podem conter CPF/CNPJ, e-mail etc. (LGPD).
         $this->logger->info('WebPag API request', [
             'method' => $method,
             'uri' => $uri,
             'has_body' => isset($options['json']) || isset($options['form_params']),
-            'query' => isset($options['query']) ? $options['query'] : null,
+            'query_keys' => isset($options['query']) && is_array($options['query']) ? array_keys($options['query']) : [],
         ]);
 
-        $lastException = null;
+        $idempotent = in_array($method, self::IDEMPOTENT_METHODS, true);
         $attempts = $this->maxRetries + 1;
 
         for ($attempt = 1; $attempt <= $attempts; $attempt++) {
@@ -75,53 +103,7 @@ class HttpClient
                 $startTime = microtime(true);
                 $response = $this->client->request($method, ltrim($uri, '/'), $options);
                 $elapsed = (microtime(true) - $startTime) * 1000;
-
-                $this->logger->info('WebPag API response', [
-                    'status' => $response->getStatusCode(),
-                    'uri' => $uri,
-                    'method' => $method,
-                    'elapsed_ms' => round($elapsed, 2),
-                ]);
-
-                if ($elapsed > $this->config->getTimeout() * 500) {
-                    $this->logger->warning('WebPag API slow response', [
-                        'uri' => $uri,
-                        'method' => $method,
-                        'elapsed_ms' => round($elapsed, 2),
-                    ]);
-                }
-
-                $apiResponse = ApiResponse::fromResponse($response);
-
-                if ($response->getStatusCode() >= 400) {
-                    $shouldRetry = $this->isRetryableStatusCode($response->getStatusCode());
-
-                    if ($shouldRetry && $attempt < $attempts) {
-                        $delay = $this->getBackoffDelay($attempt);
-                        $this->logger->warning('WebPag API retryable error', [
-                            'status' => $response->getStatusCode(),
-                            'uri' => $uri,
-                            'attempt' => $attempt,
-                            'next_delay_ms' => $delay * 1000,
-                        ]);
-                        usleep((int) ($delay * 1000000));
-
-                        continue;
-                    }
-
-                    throw new ApiException(
-                        $this->resolveErrorMessage($apiResponse),
-                        $response->getStatusCode(),
-                        $apiResponse->toArray()
-                    );
-                }
-
-                return $apiResponse;
-            } catch (ApiException $e) {
-                throw $e;
             } catch (GuzzleException $e) {
-                $lastException = $e;
-
                 $this->logger->error('WebPag API communication error', [
                     'uri' => $uri,
                     'method' => $method,
@@ -129,23 +111,70 @@ class HttpClient
                     'error' => $e->getMessage(),
                 ]);
 
-                if ($attempt < $attempts) {
-                    $delay = $this->getBackoffDelay($attempt);
-                    $this->logger->info('WebPag API retrying', [
-                        'attempt' => $attempt,
-                        'next_delay_ms' => $delay * 1000,
-                    ]);
-                    usleep((int) ($delay * 1000000));
+                if (! $idempotent) {
+                    // A requisição pode ter chegado à API antes da falha (ex: timeout de leitura).
+                    // Repetir poderia duplicar cobrança/estorno/saque: o chamador deve consultar antes.
+                    throw new ApiException(
+                        'Erro de comunicação com a API WebPag em ' . $method . ' ' . $uri
+                        . '. A operação pode ter sido processada: consulte o recurso antes de repetir. '
+                        . 'Detalhe: ' . $e->getMessage(),
+                        0,
+                        null,
+                        $e
+                    );
                 }
+
+                if ($attempt < $attempts) {
+                    $this->sleepBeforeRetry($attempt, null, $uri);
+
+                    continue;
+                }
+
+                throw new ApiException(
+                    'Erro de comunicação com a API WebPag após ' . $attempts . ' tentativa(s): ' . $e->getMessage(),
+                    0,
+                    null,
+                    $e
+                );
             }
+
+            $this->logger->info('WebPag API response', [
+                'status' => $response->getStatusCode(),
+                'uri' => $uri,
+                'method' => $method,
+                'elapsed_ms' => round($elapsed, 2),
+            ]);
+
+            if ($elapsed > $this->config->getTimeout() * 500) {
+                $this->logger->warning('WebPag API slow response', [
+                    'uri' => $uri,
+                    'method' => $method,
+                    'elapsed_ms' => round($elapsed, 2),
+                ]);
+            }
+
+            $apiResponse = ApiResponse::fromResponse($response);
+            $status = $response->getStatusCode();
+
+            if ($status < 400) {
+                return $apiResponse;
+            }
+
+            if ($attempt < $attempts && $this->shouldRetryStatus($status, $idempotent)) {
+                $this->sleepBeforeRetry($attempt, $response, $uri);
+
+                continue;
+            }
+
+            throw new ApiException(
+                $this->resolveErrorMessage($apiResponse),
+                $status,
+                $apiResponse->toArray()
+            );
         }
 
-        throw new ApiException(
-            'Erro de comunicação com a API WebPag após ' . $this->maxRetries . ' tentativas: ' . $lastException->getMessage(),
-            0,
-            null,
-            $lastException
-        );
+        // Inalcançável: o laço sempre retorna ou lança.
+        throw new ApiException('Erro inesperado ao chamar a API WebPag.');
     }
 
     /**
@@ -171,14 +200,62 @@ class HttpClient
     }
 
     /**
-     * @param int $statusCode
+     * Evita que var_dump/print_r/dd exponham o token via Configuration.
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo()
+    {
+        return [
+            'config' => $this->config,
+            'maxRetries' => $this->maxRetries,
+        ];
+    }
+
+    /**
+     * 429 significa que a API recusou a requisição sem processá-la, então é seguro
+     * repetir qualquer método. 5xx só é repetido para métodos idempotentes.
+     *
+     * @param int  $statusCode
+     * @param bool $idempotent
      *
      * @return bool
      */
-    private function isRetryableStatusCode($statusCode)
+    private function shouldRetryStatus($statusCode, $idempotent)
     {
-        // 429 = Too Many Requests, 5xx = Server errors
-        return $statusCode === 429 || ($statusCode >= 500 && $statusCode < 600);
+        if ($statusCode === 429) {
+            return true;
+        }
+
+        return $idempotent && $statusCode >= 500 && $statusCode < 600;
+    }
+
+    /**
+     * @param int                    $attempt
+     * @param ResponseInterface|null $response
+     * @param string                 $uri
+     *
+     * @return void
+     */
+    private function sleepBeforeRetry($attempt, $response, $uri)
+    {
+        $delay = $this->getBackoffDelay($attempt);
+
+        if ($response !== null) {
+            $retryAfter = $response->getHeaderLine('Retry-After');
+            if ($retryAfter !== '' && ctype_digit($retryAfter)) {
+                $delay = min((int) $retryAfter, self::MAX_RETRY_AFTER);
+            }
+        }
+
+        $this->logger->warning('WebPag API retrying', [
+            'status' => $response !== null ? $response->getStatusCode() : null,
+            'uri' => $uri,
+            'attempt' => $attempt,
+            'next_delay_ms' => $delay * 1000,
+        ]);
+
+        usleep((int) ($delay * 1000000));
     }
 
     /**
@@ -264,7 +341,7 @@ class HttpClient
 
             foreach ($response['errors'] as $field => $fieldErrors) {
                 if (is_array($fieldErrors)) {
-                    $messages[] = $field . ': ' . implode(', ', $fieldErrors);
+                    $messages[] = $field . ': ' . implode(', ', array_map('strval', array_filter($fieldErrors, 'is_scalar')));
                 } else {
                     $messages[] = (string) $fieldErrors;
                 }

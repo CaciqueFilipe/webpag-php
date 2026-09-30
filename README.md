@@ -5,15 +5,17 @@
 [![License](https://poser.pugx.org/filipecacique/webpag-php/license)](https://packagist.org/packages/filipecacique/webpag-php)
 [![PHP Version Require](https://poser.pugx.org/filipecacique/webpag-php/require/php)](https://packagist.org/packages/filipecacique/webpag-php)
 
-SDK PHP para integração com a [API WebPag](https://api.webpag.com.br/docs). Compatível com **PHP puro (7.2+)** e **Laravel (5.8+)** — o Laravel é opcional.
+SDK PHP para integração com a [API WebPag](https://api.webpag.com.br/docs). Compatível com **PHP puro (7.2.5+)** e **Laravel (5.8+)** — o Laravel é opcional.
 
 ## Instalação
 
 ```bash
-composer require webpag/webpag-php
+composer require filipecacique/webpag-php
 ```
 
-A dependência principal é apenas o **Guzzle**. O suporte a Laravel (`Service Provider` e `Facade`) é carregado automaticamente só quando o pacote é instalado em um projeto Laravel — em PHP puro, nada disso é necessário.
+> Confira o nome do pacote: `filipecacique/webpag-php`. Pacotes com nomes parecidos não são deste projeto.
+
+A dependência principal é apenas o **Guzzle 7.15.2+**. Versões anteriores, incluindo toda a série 6.x, têm vulnerabilidades conhecidas e não são aceitas. O suporte a Laravel (`Service Provider` e `Facade`) é carregado automaticamente só quando o pacote é instalado em um projeto Laravel — em PHP puro, nada disso é necessário.
 
 ## Configuração
 
@@ -92,9 +94,9 @@ WEBPAG_BASE_URL=https://api.webpag.com.br
 use WebPag\Laravel\Facades\WebPag;
 
 Route::get('/pagadores', function () {
-    // O método list() retorna um array de DTOs `Payer`.
-    // O Laravel se encarrega de serializar para JSON.
-    $payers = WebPag::payers->list();
+    // O método list() retorna uma PaginatedCollection de DTOs `Payer`.
+    // Ela implementa JsonSerializable: gera {"data": [...], "links": {...}, "meta": {...}}.
+    $payers = WebPag::payers()->list(['page' => (int) request('page', 1)]);
     return response()->json($payers);
 });
 ```
@@ -148,8 +150,37 @@ $payment = $webpag->payments->process([
 // $payment é um objeto WebPag\Responses\Payments\Payment
 echo "Pagamento criado com ID: " . $payment->id . PHP_EOL;
 echo "Status: " . $payment->statusLabel . PHP_EOL;
-echo "PIX Copia e Cola: " . $payment->pix['qr_code_text'] . PHP_EOL;
+echo "PIX Copia e Cola: " . $payment->pix->qrcodeData . PHP_EOL;
 ```
+
+### Listar com paginação
+
+Todos os métodos `list()` retornam um `WebPag\Responses\Pagination\PaginatedCollection`. Ele se comporta como um array somente leitura (`foreach`, `count()`, `$lista[0]`) e também expõe os dados de paginação da API:
+
+```php
+$filters = ['page' => 1, 'per_page' => 15];
+
+do {
+    $payments = $webpag->payments->list($filters);
+
+    foreach ($payments as $payment) {
+        echo $payment->id . ' - ' . $payment->statusLabel . PHP_EOL;
+    }
+
+    $filters['page'] = $payments->nextPage(); // null na última página
+} while ($filters['page'] !== null);
+```
+
+| Método | Retorno |
+|--------|---------|
+| `all()` | `array` com os DTOs da página (use com `array_map`, `array_filter` etc.) |
+| `first()` / `isEmpty()` | primeiro item ou `null` / se a página está vazia |
+| `total()`, `perPage()`, `currentPage()`, `lastPage()` | `int` ou `null` quando a API não envia paginação |
+| `hasMorePages()` / `nextPage()` | se existe próxima página / número dela ou `null` |
+| `getMeta()` / `getLinks()` | `PaginationMeta` (chave `meta`) / `PaginationLinks` (chave `links`) |
+| `toArray()` | `['data' => [...], 'links' => [...], 'meta' => [...]]` em snake_case |
+
+> **Migração:** antes o `list()` retornava `array`. `foreach`, `count()` e acesso por índice continuam funcionando; para funções nativas de array (`array_map`, `is_array`...), use `$lista->all()`.
 
 ### Usando DTOs tipados
 
@@ -205,49 +236,56 @@ $payment = $webpag->payments->find(123);
 
 echo $payment->id;
 echo $payment->statusLabel;
-echo $payment->amount; // em centavos
+echo $payment->amount;      // int, em centavos (156 = R$ 1,56)
+echo $payment->feeValue;    // float, em reais (0.36)
+echo $payment->pix->amount; // float, em reais (2.55)
 ```
 
 Alguns dos principais DTOs de resposta são:
 
 - `WebPag\Responses\Business\Business`
-- `WebPag\Responses\Business\CardTokenPublicKey`
+- `WebPag\Responses\Card\CardToken`
+- `WebPag\Responses\Card\CreditCard`
+- `WebPag\Responses\Installments\InstallmentPlan`
 - `WebPag\Responses\Installments\Installment`
 - `WebPag\Responses\PaymentLinks\PaymentLink`
-- `WebPag\Responses\Payers\Payer`
-- `WebPag\Responses\Payers\SavedCreditCard`
-- `WebPag\Responses\Payments\Payment`
+- `WebPag\Responses\Payers\Payer` — inclui `address` (`Address`) e `cards` (`CreditCard[]`)
+- `WebPag\Responses\Payments\Payment` — inclui `pix` (`Pix`), `boleto` (`BankSlip`), `transactions` (`Transaction[]`), `splits` (`Split[]`), `refunds` (`Refund[]`) e `creditSchedule` (`CreditSchedule[]`)
 - `WebPag\Responses\Payments\Refund`
-- `WebPag\Responses\Recurrency\Recurrency`
+- `WebPag\Responses\Pagination\PaginatedCollection` — retorno de todos os `list()`
+- `WebPag\Responses\Recurrency\Recurrency` — estende `Payment` (a API retorna a mesma estrutura)
 - `WebPag\Responses\Transfers\Transfer`
 - e outros...
 
 ## Webhooks
 
-Para processar notificações recebidas da WebPag, é crucial primeiro **validar a assinatura** para garantir a autenticidade da requisição.
+Sempre **valide a assinatura** antes de processar a notificação. `parseVerified()` valida e interpreta em uma única chamada, e lança `WebPagException` se a assinatura for inválida:
 
 ```php
-// 1. Obtenha os dados brutos e a assinatura do header
+use WebPag\Enums\PaymentStatus;
+use WebPag\Exceptions\WebPagException;
+
+// Corpo BRUTO da requisição: não faça json_decode/json_encode antes de validar
 $rawPayload = $request->getContent();
-$signature = $request->header('X-Webpag-Signature');
-$apiToken = config('webpag.api_token'); // ou getenv('WEBPAG_API_TOKEN')
+$signature = $request->header('X-Webpag-Signature'); // null se ausente
+$apiToken = config('webpag.api_token');
 
-// 2. Valide a assinatura
-if (!\WebPag\Webhooks\WebhookParser::verifySignature($rawPayload, $signature, $apiToken)) {
-    abort(403, 'Invalid signature.');
+try {
+    $event = $webpag->webhooks->parseVerified($rawPayload, $signature, $apiToken);
+} catch (WebPagException $e) {
+    abort(401); // resposta genérica, sem detalhar o motivo
 }
 
-// 3. Interprete o evento
-$event = $webpag->webhooks->parse($rawPayload);
+if ($event->isPayment()) {
+    $payment = $event->getPayload(); // WebPag\Responses\Payments\Payment
 
-if ($event->isPayment() && $event->getStatus() === 40) {
-    // Pagamento confirmado
-    $paymentId = $event->get('id');
+    if ($payment->status === PaymentStatus::PAID) {
+        // Libere o pedido $payment->orderId uma única vez (a WebPag pode reenviar o evento)
+    }
 }
-
-// Valide o business.id para garantir autenticidade
-$businessId = $event->getBusinessId();
 ```
+
+`verifySignature()` continua disponível para validar separadamente. Ela retorna `false`, sem lançar exceção, quando o header está ausente ou malformado ou quando o token está vazio.
 
 ## Tratamento de erros
 
@@ -257,7 +295,7 @@ use WebPag\Exceptions\ApiException;
 try {
     $webpag->payments->find(99999);
 } catch (ApiException $e) {
-    print_r($e->getResponseBody()); // Corpo completo
+    $body = $e->getResponseBody(); // Corpo completo: pode conter dados pessoais, não exiba ao usuário final
     echo "HTTP Status: " . $e->getStatusCode();      // 404
     echo "Mensagem: " . $e->getErrorMessage();    // Mensagem da API
     echo "Código Erro: " . $e->getErrorCode();   // Erro WebPag identificador
@@ -278,6 +316,38 @@ Para casos onde você precise de acesso ao objeto de resposta HTTP completo (sta
 
 O `HttpClient` interno retorna um objeto `WebPag\Http\ApiResponse` que oferece métodos como `getStatusCode()`, `getData()`, `toArray()`, e acesso `ArrayAccess` ao corpo da resposta.
 
+
+## Segurança
+
+O SDK já vem com estas proteções ativas:
+
+| Proteção | Comportamento |
+|----------|---------------|
+| HTTPS obrigatório | `base_url` com `http://` gera `InvalidArgumentException` (exceto `localhost`/`127.0.0.1`), para que o token nunca trafegue sem criptografia |
+| Sem redirecionamentos | Redirects nunca são seguidos, porque o header `auth-token` iria junto para outro host |
+| TLS verificado | O certificado do servidor é sempre validado (`verify => true`) |
+| Retry sem duplicar operações | `POST`/`PUT`/`DELETE` (cobrança, estorno, saque) **não** são repetidos após erro 5xx ou falha de rede; só após `429`. `GET` é repetido com backoff |
+| IDs validados | IDs de caminho são validados e codificados (`rawurlencode`), bloqueando path traversal como `"1/../../transfers"` |
+| Logs sem dados pessoais | O logger PSR-3 recebe só os **nomes** dos filtros, nunca os valores (CPF, e-mail...) nem o token |
+| Debug mascarado | `var_dump`/`print_r`/`dd` mostram token e cartão mascarados (`****cdef`, `************1111`) |
+| Webhook | `verifySignature` usa comparação em tempo constante e recusa token vazio ou assinatura malformada |
+
+### Boas práticas para quem integra
+
+- **Token:** guarde em variável de ambiente ou num cofre de segredos. Nunca versione e nunca envie ao frontend. Se vazar, gere outro com a WebPag.
+- **Cartão:** prefira `card_token` (tokenização no frontend com `business->cardTokenPublicKey()`). Enviar número e CVV pelo seu servidor coloca a sua aplicação no escopo PCI-DSS.
+- **Falha de rede em POST:** se `process()`, `create()` ou `refund()` lançar erro de comunicação, **consulte** o recurso (ex: por `order_id`) antes de tentar de novo, para não duplicar a operação.
+- **Webhooks:** use `parseVerified()`, responda rápido e trate eventos repetidos (idempotência pelo ID).
+- **Erros:** `ApiException::getResponseBody()` e `getErrorTrace()` podem conter dados pessoais e detalhes internos. Registre nos seus logs, mas não exiba ao usuário final.
+
+## Desenvolvimento
+
+O `composer.lock` não é versionado (pacote de biblioteca), para que as dependências sejam resolvidas de acordo com a versão de PHP de cada ambiente (7.2 a 8.4):
+
+```bash
+composer update
+composer test
+```
 
 ## Licença
 

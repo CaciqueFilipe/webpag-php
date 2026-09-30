@@ -5,6 +5,7 @@ namespace WebPag\Resources;
 use WebPag\Requests\Payments\ListPaymentsRequest;
 use WebPag\Requests\Payments\ProcessPaymentRequest;
 use WebPag\Requests\Payments\RefundPaymentRequest;
+use WebPag\Responses\Pagination\PaginatedCollection;
 use WebPag\Responses\Payments\Payment;
 use WebPag\Responses\Payments\Refund;
 
@@ -15,16 +16,16 @@ class Payments extends AbstractResource
      *
      * @param ListPaymentsRequest|array<string, mixed>|null $filters
      *
-     * @return Payment[]
+     * @return PaginatedCollection|Payment[]
      */
-    public function list($filters = null): array
+    public function list($filters = null): PaginatedCollection
     {
         $response = $this->http->get(
             'api/payments',
             $this->resolvePayload($filters)
         );
 
-        return Payment::fromArrayCollection($response->getData());
+        return $this->paginate($response, Payment::class);
     }
 
     /**
@@ -53,7 +54,7 @@ class Payments extends AbstractResource
      */
     public function find($paymentId): Payment
     {
-        $response = $this->http->get('api/payments/' . $paymentId);
+        $response = $this->http->get($this->path('api/payments/%s', $paymentId));
 
         return Payment::fromArray($response->getData());
     }
@@ -67,7 +68,7 @@ class Payments extends AbstractResource
      */
     public function cancel($paymentId): Payment
     {
-        $response = $this->http->delete('api/payments/' . $paymentId);
+        $response = $this->http->delete($this->path('api/payments/%s', $paymentId));
 
         return Payment::fromArray($response->getData());
     }
@@ -83,7 +84,7 @@ class Payments extends AbstractResource
     public function refund($paymentId, $request = null): Refund
     {
         $response = $this->http->put(
-            'api/payments/' . $paymentId . '/refund',
+            $this->path('api/payments/%s/refund', $paymentId),
             $this->resolvePayload($request !== null ? $request : [])
         );
 
@@ -99,7 +100,7 @@ class Payments extends AbstractResource
      */
     public function findRefund($refundId): Refund
     {
-        $response = $this->http->get('api/payments/refunds/' . $refundId);
+        $response = $this->http->get($this->path('api/payments/refunds/%s', $refundId));
 
         return Refund::fromArray($response->getData());
     }
@@ -114,7 +115,7 @@ class Payments extends AbstractResource
     public function markAsPaidDev($paymentId): Payment
     {
         $response = $this->http->post(
-            'api/payments/' . $paymentId . '/mark-as-paid-dev'
+            $this->path('api/payments/%s/mark-as-paid-dev', $paymentId)
         );
 
         return Payment::fromArray($response->getData());

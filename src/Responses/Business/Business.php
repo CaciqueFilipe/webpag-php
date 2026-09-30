@@ -15,7 +15,7 @@ class Business implements ResponsePayload
     /** @var string|null */
     public $notificationEmail;
 
-    /** @var string|null */
+    /** @var string|null Somente dígitos, ex: "00000000000191" */
     public $cnpj;
 
     /**

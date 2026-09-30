@@ -26,16 +26,16 @@ class Payment implements ResponsePayload
     /** @var string|null */
     public $name;
 
-    /** @var int|null */
+    /** @var int|null (em centavos) */
     public $amount;
 
-    /** @var int|null */
+    /** @var int|null (em centavos) */
     public $amountRefunded;
 
-    /** @var float|null */
+    /** @var float|null (em reais, ex: 0.36) */
     public $feeValue;
 
-    /** @var int|null */
+    /** @var int|null (em centavos) */
     public $refundedFee;
 
     /** @var int|null */
@@ -98,22 +98,31 @@ class Payment implements ResponsePayload
     /** @var string|null */
     public $nextRecurrenceDate;
 
+    /** @var Transaction[]|null */
+    public $transactions;
+
+    /** @var Split[]|null */
+    public $splits;
+
     /** @var Refund[]|null */
     public $refunds;
 
-    /** @var string|null */
+    /** @var string|null (Y-m-d H:i) */
     public $createdAt;
 
-    /** @var string|null */
+    /** @var string|null (Y-m-d H:i) */
     public $paidAt;
 
-    /** @var string|null */
+    /** @var string|null (Y-m-d H:i) */
     public $updatedAt;
 
     /** @var string|null */
     public $receiptPdfPath;
 
-    /** @var string|null */
+    /** @var CreditSchedule[]|null */
+    public $creditSchedule;
+
+    /** @var int|null */
     public $cardFlag;
 
     /** @var string|null */
@@ -121,11 +130,12 @@ class Payment implements ResponsePayload
 
     /**
      * @param array<string, mixed> $data
-     * @return self
+     * @return static
      */
     public static function fromArray(array $data): self
     {
-        $instance = new self();
+        // "static" para que subclasses (ex: Recurrency) recebam a própria instância
+        $instance = new static();
 
         $instance->id = isset($data['id']) ? (int) $data['id'] : null;
         $instance->payerId = isset($data['payer_id']) ? (int) $data['payer_id'] : null;
@@ -157,14 +167,27 @@ class Payment implements ResponsePayload
         $instance->paidAt = $data['paid_at'] ?? null;
         $instance->updatedAt = $data['updated_at'] ?? null;
         $instance->receiptPdfPath = $data['receipt_pdf_path'] ?? null;
-        $instance->cardFlag = $data['card_flag'] ?? null;
+        $instance->cardFlag = isset($data['card_flag']) ? (int) $data['card_flag'] : null;
         $instance->cardFlagLabel = $data['card_flag_label'] ?? null;
 
         if (isset($data['business']) && is_array($data['business'])) {
             $instance->business = Business::fromArray($data['business']);
         }
+
+        if (isset($data['transactions']) && is_array($data['transactions'])) {
+            $instance->transactions = Transaction::fromArrayCollection($data['transactions']);
+        }
+
+        if (isset($data['splits']) && is_array($data['splits'])) {
+            $instance->splits = Split::fromArrayCollection($data['splits']);
+        }
+
         if (isset($data['refunds']) && is_array($data['refunds'])) {
             $instance->refunds = Refund::fromArrayCollection($data['refunds']);
+        }
+
+        if (isset($data['credit_schedule']) && is_array($data['credit_schedule'])) {
+            $instance->creditSchedule = CreditSchedule::fromArrayCollection($data['credit_schedule']);
         }
 
         if (isset($data['payer']) && is_array($data['payer'])) {
@@ -218,13 +241,14 @@ class Payment implements ResponsePayload
             'start_date' => $this->startDate,
             'next_date' => $this->nextDate,
             'next_recurrence_date' => $this->nextRecurrenceDate,
-            'refunds' => $this->refunds ? array_map(function ($refund) {
-                return $refund->toArray();
-            }, $this->refunds) : null,
+            'transactions' => self::collectionToArray($this->transactions),
+            'splits' => self::collectionToArray($this->splits),
+            'refunds' => self::collectionToArray($this->refunds),
             'created_at' => $this->createdAt,
             'paid_at' => $this->paidAt,
             'updated_at' => $this->updatedAt,
             'receipt_pdf_path' => $this->receiptPdfPath,
+            'credit_schedule' => self::collectionToArray($this->creditSchedule),
             'card_flag' => $this->cardFlag,
             'card_flag_label' => $this->cardFlagLabel,
         ], function ($value) {
@@ -233,15 +257,30 @@ class Payment implements ResponsePayload
     }
 
     /**
+     * @param ResponsePayload[]|null $items
+     * @return array<array<string, mixed>>|null
+     */
+    private static function collectionToArray($items)
+    {
+        if ($items === null) {
+            return null;
+        }
+
+        return array_map(function (ResponsePayload $item) {
+            return $item->toArray();
+        }, $items);
+    }
+
+    /**
      * Cria uma coleção de instâncias a partir de um array de dados da API.
      *
      * @param array<array<string, mixed>> $collection
-     * @return self[]
+     * @return static[]
      */
     public static function fromArrayCollection(array $collection): array
     {
         return array_map(function ($data) {
-            return self::fromArray($data);
+            return static::fromArray($data);
         }, $collection);
     }
 }

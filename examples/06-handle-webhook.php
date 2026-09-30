@@ -1,83 +1,73 @@
 <?php
 
 /**
- * Exemplo: Processar um webhook da WebPag
+ * Exemplo: Endpoint que recebe webhooks da WebPag
  *
- * Este script simula o endpoint que recebe as notificações (webhooks) da WebPag.
- * Ele demonstra como:
- * 1. Validar a assinatura do webhook para garantir sua autenticidade.
- * 2. Interpretar (parse) o payload para obter um objeto de evento tipado.
- * 3. Tratar diferentes tipos de eventos (pagamento, transferência, etc.).
+ * Demonstra como:
+ * 1. Ler o corpo BRUTO da requisição (a assinatura é calculada sobre ele).
+ * 2. Validar a assinatura antes de qualquer processamento (parseVerified).
+ * 3. Tratar os tipos de evento (pagamento, transferência, estorno...).
+ * 4. Responder rápido e sem vazar detalhes de erro para quem chamou.
  *
- * Para testar:
- * 1. Crie um payload JSON (ex: '{"id": 123, "status": 40, "method": "pix"}').
- * 2. Calcule a assinatura HMAC-SHA256.
- * 3. Simule uma requisição para este script com o payload e o header X-Webpag-Signature.
+ * Para testar localmente:
+ *   WEBPAG_API_TOKEN=seu-token php -S localhost:8000 examples/06-handle-webhook.php
+ *   BODY='{"id":123,"status":40,"method":"pix","payer_id":15}'
+ *   SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "seu-token" | cut -d' ' -f2)
+ *   curl -X POST localhost:8000 -H "X-Webpag-Signature: $SIG" -d "$BODY"
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use WebPag\Enums\PaymentStatus;
+use WebPag\Exceptions\WebPagException;
 use WebPag\Responses\Payments\Payment;
 use WebPag\Responses\Transfers\Transfer;
 use WebPag\Webhooks\WebhookParser;
-use WebPag\WebPag;
 
-// --- Simulação do ambiente de uma requisição HTTP ---
-
-// 1. Obtenha o seu API Token (usado como chave secreta para a assinatura).
-// Em um projeto real, isso viria do seu arquivo .env ou configuração.
-$apiToken = getenv('WEBPAG_API_TOKEN') ?: 'seu-token-secreto-aqui';
-
-// 2. Simule o corpo bruto (raw payload) da requisição.
-$rawPayload = '{"id": 12345, "status": 40, "method": "pix", "amount": 2500, "payer_id": 15}';
-
-// 3. Simule o header da assinatura enviado pela WebPag.
-$signature = hash_hmac('sha256', $rawPayload, $apiToken);
-
-// --- Fim da Simulação ---
-
-
-echo "Iniciando processamento do Webhook..." . PHP_EOL;
-echo "-------------------------------------" . PHP_EOL;
-
-// Etapa 1: Validar a assinatura
-// Isso é CRUCIAL para garantir que a requisição veio da WebPag e não foi adulterada.
-if (! WebhookParser::verifySignature($rawPayload, $signature, $apiToken)) {
-    // Em um cenário real, você retornaria um status HTTP 401 ou 403.
-    die("Erro: Assinatura do Webhook inválida!");
+// 1. O token vem SEMPRE da configuração. Nunca use um valor padrão fixo no código:
+//    com um token conhecido qualquer pessoa consegue forjar a assinatura.
+$apiToken = getenv('WEBPAG_API_TOKEN');
+if (! is_string($apiToken) || $apiToken === '') {
+    http_response_code(500);
+    error_log('WEBPAG_API_TOKEN não configurado: webhook recusado.');
+    exit;
 }
 
-echo "Assinatura validada com sucesso!" . PHP_EOL;
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+    http_response_code(405);
+    exit;
+}
 
-// Etapa 2: Iniciar o SDK e interpretar o payload
-$webpag = WebPag::env();
+// 2. Corpo bruto, exatamente como chegou (não use json_decode + json_encode antes de validar).
+$rawPayload = (string) file_get_contents('php://input');
+$signature = isset($_SERVER['HTTP_X_WEBPAG_SIGNATURE']) ? $_SERVER['HTTP_X_WEBPAG_SIGNATURE'] : null;
 
 try {
-    $event = $webpag->webhooks->parse($rawPayload);
-
-    // Etapa 3: Tratar o evento com base no seu tipo
-    if ($event->isPayment()) {
-        /** @var Payment $payment */
-        $payment = $event->getPayload();
-
-        echo "Evento de Pagamento recebido. ID: {$payment->id}" . PHP_EOL;
-
-        if ($payment->status === PaymentStatus::PAID) {
-            echo "Status: Pagamento confirmado! Liberando o pedido..." . PHP_EOL;
-            // Aqui você colocaria a lógica para liberar o pedido, notificar o cliente, etc.
-        }
-    } elseif ($event->isTransfer()) {
-        /** @var Transfer $transfer */
-        $transfer = $event->getPayload();
-        echo "Evento de Transferência recebido. ID: {$transfer->id}, Status: {$transfer->statusName}" . PHP_EOL;
-        // Lógica para atualizar o status de uma transferência no seu sistema.
-    } else {
-        echo "Tipo de evento recebido: " . $event->getType() . PHP_EOL;
-    }
-} catch (\WebPag\Exceptions\WebPagException $e) {
-    echo "Erro ao interpretar o webhook: " . $e->getMessage() . PHP_EOL;
+    // 3. Valida a assinatura e só então interpreta o payload.
+    $event = (new WebhookParser())->parseVerified($rawPayload, $signature, $apiToken);
+} catch (WebPagException $e) {
+    // Resposta genérica: não informe ao chamador o motivo exato da recusa.
+    http_response_code(401);
+    error_log('Webhook WebPag recusado: ' . $e->getMessage());
+    exit;
 }
 
-echo "-------------------------------------" . PHP_EOL;
-echo "Processamento do Webhook finalizado." . PHP_EOL;
+// 4. Trate o evento. Dica: use o ID como chave de idempotência, porque a WebPag pode reenviar
+//    o mesmo evento, e consulte a API (find) antes de liberar algo de alto valor.
+if ($event->isPayment()) {
+    /** @var Payment $payment */
+    $payment = $event->getPayload();
+
+    if ($payment->status === PaymentStatus::PAID) {
+        // Libere o pedido associado a $payment->orderId (uma única vez).
+        error_log('Pagamento confirmado: ' . $payment->id);
+    }
+} elseif ($event->isTransfer()) {
+    /** @var Transfer $transfer */
+    $transfer = $event->getPayload();
+    error_log('Transferência ' . $transfer->id . ' com status ' . $transfer->statusName);
+} else {
+    error_log('Evento WebPag do tipo ' . $event->getType() . ' recebido.');
+}
+
+http_response_code(200);

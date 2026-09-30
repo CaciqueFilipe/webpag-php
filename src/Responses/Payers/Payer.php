@@ -4,6 +4,7 @@ namespace WebPag\Responses\Payers;
 
 use WebPag\Contracts\ResponsePayload;
 use WebPag\Requests\Payers\Address;
+use WebPag\Responses\Card\CreditCard;
 
 class Payer implements ResponsePayload
 {
@@ -36,6 +37,9 @@ class Payer implements ResponsePayload
 
     /** @var Address|null */
     public $address;
+
+    /** @var CreditCard[]|null */
+    public $cards;
 
     /** @var bool|null */
     public $useBoleto;
@@ -85,6 +89,12 @@ class Payer implements ResponsePayload
             $payer->address = Address::fromArray($data['address']);
         }
 
+        if (isset($data['cards']) && is_array($data['cards'])) {
+            $payer->cards = array_map(function ($card) {
+                return CreditCard::fromArray($card);
+            }, array_values(array_filter($data['cards'], 'is_array')));
+        }
+
         return $payer;
     }
 
@@ -122,6 +132,9 @@ class Payer implements ResponsePayload
             'phone_number' => $this->phoneNumber,
             'birth_date' => $this->birthDate,
             'address' => $this->address ? $this->address->toArray() : null,
+            'cards' => $this->cards !== null ? array_map(function (CreditCard $card) {
+                return $card->toArray();
+            }, $this->cards) : null,
             'use_boleto' => $this->useBoleto,
             'status' => $this->status,
             'status_label' => $this->statusLabel,

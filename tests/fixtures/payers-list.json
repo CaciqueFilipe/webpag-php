@@ -1,0 +1,93 @@
+{
+    "data": [
+        {
+            "id": 245044,
+            "cpf_cnpj": "00000000191",
+            "is_business": false,
+            "email": "pagador@example.com",
+            "first_name": "FULANO",
+            "last_name": "DE TAL",
+            "gender": "M",
+            "phone_number": null,
+            "birth_date": "1954-12-11",
+            "address": {
+                "zip_code": "90030-040",
+                "street": "Rua Exemplo",
+                "number": "408",
+                "district": "Centro",
+                "city": "Porto Alegre",
+                "state": "RS",
+                "country": "BR"
+            },
+            "cards": [
+                {
+                    "id": 344630,
+                    "last_numbers": "8119",
+                    "active": true,
+                    "created_at": "2026-09-18 14:35:22"
+                },
+                {
+                    "id": 345986,
+                    "last_numbers": "4136",
+                    "active": false,
+                    "created_at": "2026-09-21 15:18:38"
+                }
+            ],
+            "use_boleto": null,
+            "status": 10,
+            "status_label": "Ativo",
+            "created_at": "2026-08-26 22:15:46",
+            "updated_at": "2026-09-18 14:35:21"
+        },
+        {
+            "id": 245754,
+            "cpf_cnpj": "00000000272",
+            "is_business": false,
+            "email": "outro@example.com",
+            "first_name": "Ciclano",
+            "last_name": "Silva",
+            "gender": null,
+            "phone_number": null,
+            "birth_date": null,
+            "address": null,
+            "cards": [],
+            "use_boleto": null,
+            "status": 10,
+            "status_label": "Ativo",
+            "created_at": "2026-09-08 17:40:46",
+            "updated_at": "2026-09-08 17:40:46"
+        }
+    ],
+    "links": {
+        "first": "https://api.webpag.com.br/api/payers?page=1",
+        "last": "https://api.webpag.com.br/api/payers?page=1",
+        "prev": null,
+        "next": null
+    },
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 1,
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; Anterior",
+                "active": false
+            },
+            {
+                "url": "https://api.webpag.com.br/api/payers?page=1",
+                "label": "1",
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "Próximo &raquo;",
+                "active": false
+            }
+        ],
+        "path": "https://api.webpag.com.br/api/payers",
+        "per_page": 15,
+        "to": 2,
+        "total": 2
+    }
+}
