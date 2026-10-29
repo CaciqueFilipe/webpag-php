@@ -1,0 +1,17 @@
+{
+    "id": 1,
+    "name": "Empresa Exemplo",
+    "gateway_name": "Empresa Exemplo",
+    "notification_email": "empresa@example.com",
+    "cnpj": "12.345.678/0001-99",
+    "phone_number": "41999999999",
+    "status": 10,
+    "current_balance": 150050,
+    "fees": {
+        "service_fee": 2.5,
+        "service_fee_type": "F",
+        "credit_1x_fee": 3.99,
+        "pix_fee": 0.99,
+        "boleto_fee": 2.5
+    }
+}

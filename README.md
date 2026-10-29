@@ -246,6 +246,7 @@ echo $payment->pix->amount; // float, em reais (2.55)
 Alguns dos principais DTOs de resposta são:
 
 - `WebPag\Responses\Business\Business`
+- `WebPag\Responses\Business\BusinessFees`
 - `WebPag\Responses\Card\CardToken`
 - `WebPag\Responses\Card\CreditCard`
 - `WebPag\Responses\Installments\InstallmentPlan`
