@@ -26,31 +26,57 @@ class BusinessResponseTest extends TestCase
         $this->assertInstanceOf(BusinessResponse::class, $business);
         $this->assertSame(1, $business->id);
         $this->assertSame('Empresa Exemplo', $business->name);
-        $this->assertSame('Empresa Exemplo', $business->gatewayName);
+        $this->assertSame('gateway-exemplo', $business->gatewayName);
         $this->assertSame('empresa@example.com', $business->notificationEmail);
-        $this->assertSame('12.345.678/0001-99', $business->cnpj);
-        $this->assertSame('41999999999', $business->phoneNumber);
+        $this->assertSame('00000000000191', $business->cnpj);
+        $this->assertSame('(00)00000-000', $business->phoneNumber);
         $this->assertSame(10, $business->status);
-        $this->assertSame(150050, $business->currentBalance);
+        $this->assertSame(1234, $business->currentBalance);
 
-        $this->assertInstanceOf(BusinessFees::class, $business->fees);
-        $this->assertSame(2.5, $business->fees->serviceFee);
-        $this->assertSame('F', $business->fees->serviceFeeType);
-        $this->assertSame(3.99, $business->fees->credit1xFee);
-        $this->assertSame(0.99, $business->fees->pixFee);
-        $this->assertSame(2.5, $business->fees->boletoFee);
+        $fees = $business->fees;
+        $this->assertInstanceOf(BusinessFees::class, $fees);
+        $this->assertNull($fees->serviceFeeType);
+        $this->assertSame(3, $fees->creditInstallmentLimit);
+        $this->assertTrue($fees->boletoEnabled);
+        $this->assertSame(1.5, $fees->serviceFee);
+        $this->assertSame(7.5, $fees->transferExpressFee);
+        $this->assertSame(2.5, $fees->credit1xFee);
+        $this->assertSame(3.5, $fees->credit6xFee);
+        $this->assertSame(4.5, $fees->credit12xFee);
+        $this->assertSame(0.0, $fees->credit18xFee);
+        $this->assertSame(1.25, $fees->debitFee);
+        $this->assertSame(0.75, $fees->pixFee);
+        $this->assertSame(0.0, $fees->pixFeePercentage);
+        $this->assertSame(0.0, $fees->pixAutomaticFee);
+        $this->assertSame(0.0, $fees->pixAutomaticFeePercentage);
+        $this->assertSame(2.25, $fees->boletoFee);
+        $this->assertSame(1.5, $fees->boletoInterest);
+        $this->assertSame(2.5, $fees->boletoFine);
+        $this->assertSame(3.25, $fees->installmentPlanFee);
+        $this->assertSame(1.25, $fees->installmentPlanFeeFixed);
+        $this->assertSame(1.75, $fees->anticipationFee);
 
+        // toArray() omite nulls (service_fee_type)
+        unset($body['fees']['service_fee_type']);
         $this->assertSame($body, $business->toArray());
     }
 
-    public function testMeDecimalStringFeesAreNotTruncated()
+    public function testMeFeesNumbersAreFloatsEvenWhenApiSendsIntegersOrStrings()
     {
         $http = $this->createMock(HttpClient::class);
-        $http->method('get')->willReturn(new ApiResponse(['id' => 1, 'fees' => ['pix_fee' => '0.99']], 200));
+        $http->method('get')->willReturn(new ApiResponse([
+            'id' => 1,
+            'fees' => ['transfer_express_fee' => 10, 'pix_fee' => '0.99', 'credit_18x_fee' => 0, 'boleto_enabled' => false],
+        ], 200));
 
-        $business = (new Business($http))->me();
+        $fees = (new Business($http))->me()->fees;
 
-        $this->assertSame(0.99, $business->fees->pixFee);
+        $this->assertSame(10.0, $fees->transferExpressFee);
+        $this->assertSame(0.99, $fees->pixFee);
+        $this->assertSame(0.0, $fees->credit18xFee);
+        $this->assertFalse($fees->boletoEnabled);
+        $this->assertNull($fees->debitFee);
+        $this->assertSame(['transfer_express_fee' => 10.0, 'credit_18x_fee' => 0.0, 'pix_fee' => 0.99, 'boleto_enabled' => false], $fees->toArray());
     }
 
     public function testMeAlsoAcceptsDataEnvelope()
